@@ -13,7 +13,7 @@
     "type-check": "turbo run type-check",
     "test": "turbo run test",
     "clean": "turbo run clean && rm -rf node_modules",
-    "postinstall": "prisma generate"
+    "db:generate": "npm run generate --workspace=apps/api"
   },
   "devDependencies": {
     "turbo": "^2.1.3",
