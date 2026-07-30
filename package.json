@@ -2,6 +2,7 @@
   "name": "ai-assessment-platform",
   "private": true,
   "version": "0.1.0",
+  "packageManager": "npm@11.16.0",
   "workspaces": [
     "apps/*",
     "packages/*"
@@ -17,6 +18,7 @@
     "redis:up": "docker compose -f infra/docker-compose.yml up -d",
     "redis:down": "docker compose -f infra/docker-compose.yml down",
     "redis:logs": "docker compose -f infra/docker-compose.yml logs -f redis"
+    
   },
   "devDependencies": {
     "turbo": "^2.1.3",
