@@ -2,12 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { env } from '@/lib/env';
-
-interface HealthResponse {
-  status: 'ok' | 'error';
-  database: 'connected' | 'disconnected';
-  timestamp: string;
-}
+import { healthResponseSchema, type HealthResponse } from '@ai-assessment/shared-types';
 
 async function fetchHealth(): Promise<HealthResponse> {
   const res = await fetch(`${env.NEXT_PUBLIC_API_URL}/health`);
@@ -16,7 +11,8 @@ async function fetchHealth(): Promise<HealthResponse> {
     throw new Error(`Health check failed with status ${res.status}`);
   }
 
-  return res.json();
+  const json = await res.json();
+  return healthResponseSchema.parse(json);
 }
 
 export function useHealthCheck() {
