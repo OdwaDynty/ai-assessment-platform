@@ -26,7 +26,6 @@ export async function updateSession(request: NextRequest) {
     },
   );
 
-  // Refreshes the session token if needed (fast, local JWKS-based verification)
   const { data } = await supabase.auth.getClaims();
 
   const protectedPaths = ['/dashboard'];
