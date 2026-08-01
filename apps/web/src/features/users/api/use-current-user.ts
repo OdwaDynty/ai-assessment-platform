@@ -4,12 +4,15 @@ import { useQuery } from '@tanstack/react-query';
 import { createClient } from '@/lib/supabase/client';
 import { env } from '@/lib/env';
 
-interface CurrentUser {
+export interface CurrentUser {
   id: string;
   supabaseId: string;
   email: string;
   fullName: string | null;
   role: string;
+  isActive: boolean;
+  institutionId: string | null;
+  lastLoginAt: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -24,7 +27,7 @@ async function fetchCurrentUser(): Promise<CurrentUser> {
     throw new Error('Not authenticated');
   }
 
-  const res = await fetch(`${env.NEXT_PUBLIC_API_URL}/auth/me`, {
+  const res = await fetch(`${env.NEXT_PUBLIC_API_URL}/users/me`, {
     headers: {
       Authorization: `Bearer ${session.access_token}`,
     },
