@@ -25,6 +25,9 @@ export default function DashboardPage() {
               <Link href="/dashboard/profile">
                <Button variant="outline">My Profile</Button>
             </Link>
+            <Link href="/dashboard/documents">
+              <Button variant="outline">Documents</Button>
+            </Link>
             <SignOutButton />
           </div>
         </CardHeader>
