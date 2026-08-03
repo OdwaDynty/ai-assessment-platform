@@ -13,6 +13,21 @@ enum UserRole {
   EDUCATOR
 }
 
+enum DocumentType {
+  STUDY_GUIDE
+  TEXTBOOK
+  MODULE_GUIDE
+  OTHER
+}
+
+enum DocumentStatus {
+  PENDING
+  UPLOADED
+  PROCESSING
+  READY
+  FAILED
+}
+
 model User {
   id            String    @id @default(uuid())
   supabaseId    String    @unique @map("supabase_id")
@@ -24,6 +39,23 @@ model User {
   lastLoginAt   DateTime? @map("last_login_at")
   createdAt     DateTime  @default(now()) @map("created_at")
   updatedAt     DateTime  @updatedAt @map("updated_at")
+  documents     Document[]
 
   @@map("users")
+}
+
+model Document {
+  id            String         @id @default(uuid())
+  ownerId       String         @map("owner_id")
+  owner         User           @relation(fields: [ownerId], references: [id])
+  fileName      String         @map("file_name")
+  fileType      String         @map("file_type")
+  fileSizeBytes Int            @map("file_size_bytes")
+  storagePath   String         @map("storage_path")
+  documentType  DocumentType   @map("document_type")
+  status        DocumentStatus @default(PENDING)
+  createdAt     DateTime       @default(now()) @map("created_at")
+  updatedAt     DateTime       @updatedAt @map("updated_at")
+
+  @@map("documents")
 }
