@@ -17,7 +17,12 @@ export default function DashboardPage() {
         <CardHeader className="flex flex-row items-center justify-between">
            <CardTitle>Dashboard</CardTitle>
             <div className="flex gap-2">
-             <Link href="/dashboard/profile">
+              {data?.role === 'PLATFORM_ADMIN' && (
+                <Link href="/dashboard/admin/users">
+                 <Button variant="outline">Manage Users</Button>
+                </Link>
+               )}
+              <Link href="/dashboard/profile">
                <Button variant="outline">My Profile</Button>
             </Link>
             <SignOutButton />
