@@ -43,8 +43,10 @@ export function UsersTable({ users }: { users: CurrentUser[] }) {
             <TableCell>
               <Select
                 value={user.role}
-                onValueChange={(role) => mutate({ userId: user.id, role })}
-              >
+                onValueChange={(role) => {
+                  if (role) mutate({ userId: user.id, role });
+                }}
+                >
                 <SelectTrigger className="w-[180px]">
                   <SelectValue />
                 </SelectTrigger>

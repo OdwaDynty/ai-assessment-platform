@@ -59,7 +59,12 @@ export function DocumentUploadForm() {
     <form onSubmit={handleSubmit} className="space-y-4">
       <Field>
         <FieldLabel>Document type</FieldLabel>
-        <Select value={documentType} onValueChange={setDocumentType}>
+        <Select
+           value={documentType}
+              onValueChange={(value) => {
+                      if (value) setDocumentType(value);
+                   }}
+          >
           <SelectTrigger>
             <SelectValue />
           </SelectTrigger>
