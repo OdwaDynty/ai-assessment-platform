@@ -13,7 +13,9 @@ export class SupabaseAuthGuard implements CanActivate {
   constructor(private readonly authService: AuthService) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const request = context.switchToHttp().getRequest<Request & { user: User }>();
+    const request = context
+      .switchToHttp()
+      .getRequest<Request & { user: User }>();
     const token = this.extractToken(request);
 
     if (!token) {

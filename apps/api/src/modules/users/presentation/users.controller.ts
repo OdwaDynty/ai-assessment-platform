@@ -44,10 +44,7 @@ export class UsersController {
   @Get()
   @UseGuards(RolesGuard)
   @Roles('PLATFORM_ADMIN', 'INSTITUTION_ADMIN')
-  findAll(
-    @Query('page') page?: string,
-    @Query('pageSize') pageSize?: string,
-  ) {
+  findAll(@Query('page') page?: string, @Query('pageSize') pageSize?: string) {
     return this.usersService.findAll(
       page ? parseInt(page, 10) : undefined,
       pageSize ? parseInt(pageSize, 10) : undefined,

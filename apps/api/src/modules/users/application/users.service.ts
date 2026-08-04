@@ -47,7 +47,9 @@ export class UsersService {
     actingUser: User,
   ): Promise<User> {
     if (actingUser.role !== 'PLATFORM_ADMIN') {
-      throw new ForbiddenException('Only platform admins can update other users');
+      throw new ForbiddenException(
+        'Only platform admins can update other users',
+      );
     }
 
     const target = await this.prisma.user.findUnique({

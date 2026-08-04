@@ -1,12 +1,12 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { createClient } from '@supabase/supabase-js';
 
 const BUCKET_NAME = 'documents';
 
 @Injectable()
 export class SupabaseStorageService {
-  private readonly client: SupabaseClient;
+  private readonly client: ReturnType<typeof createClient>;
 
   constructor(private readonly configService: ConfigService) {
     const supabaseUrl = this.configService.get<string>('SUPABASE_URL');
