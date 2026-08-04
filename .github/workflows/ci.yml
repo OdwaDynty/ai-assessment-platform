@@ -28,6 +28,7 @@ jobs:
         run: npm run db:generate
         env:
           DIRECT_URL: "postgresql://user:password@localhost:5432/placeholder"
+          SHADOW_DATABASE_URL: "postgresql://user:password@localhost:5432/placeholder"
 
       - name: Lint
         run: npm run lint
