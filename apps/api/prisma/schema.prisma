@@ -56,6 +56,7 @@ model Document {
   status        DocumentStatus @default(PENDING)
   createdAt     DateTime       @default(now()) @map("created_at")
   updatedAt     DateTime       @updatedAt @map("updated_at")
+  processingError String? @map("processing_error")
   chunks DocumentChunk[]
 
   @@map("documents")

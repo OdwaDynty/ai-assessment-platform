@@ -16,11 +16,16 @@ import {
   type CreateDocumentDto,
 } from './dto/create-document.dto';
 import type { User } from '../../../../generated/prisma/client';
+import { InjectQueue } from '@nestjs/bullmq';
+import type { Queue } from 'bullmq';
 
 @Controller('documents')
 @UseGuards(SupabaseAuthGuard)
 export class DocumentsController {
-  constructor(private readonly documentsService: DocumentsService) {}
+  constructor(
+    private readonly documentsService: DocumentsService,
+    @InjectQueue('document-processing') private readonly processingQueue: Queue,
+  ) {}
 
   @Post()
   create(
@@ -43,5 +48,11 @@ export class DocumentsController {
   @Delete(':id')
   remove(@Param('id') id: string, @CurrentUser() user: User) {
     return this.documentsService.deleteDocument(id, user.id);
+  }
+
+  @Post(':id/process')
+  async triggerProcessing(@Param('id') id: string) {
+    await this.processingQueue.add('process-document', { documentId: id });
+    return { message: 'Processing job queued', documentId: id };
   }
 }

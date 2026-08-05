@@ -60,4 +60,18 @@ export class SupabaseStorageService {
       );
     }
   }
+  async downloadFile(storagePath: string): Promise<Buffer> {
+  const { data, error } = await this.client.storage
+      .from(BUCKET_NAME)
+      .download(storagePath);
+
+  if (error || !data) {
+    throw new InternalServerErrorException(
+      `Failed to download file: ${error?.message}`,
+    );
+  }
+
+  const arrayBuffer = await data.arrayBuffer();
+  return Buffer.from(arrayBuffer);
+ }
 }
