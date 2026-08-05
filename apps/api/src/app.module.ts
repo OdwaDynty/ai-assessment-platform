@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { BullModule } from '@nestjs/bullmq';
 import { validateEnv } from './config/env.validation';
+import { parseRedisUrl } from './config/redis.config';
 import { PrismaModule } from './prisma/prisma.module';
 import { HealthModule } from './modules/health/health.module';
 import { AuthModule } from './modules/auth/auth.module';
@@ -13,6 +15,12 @@ import { DocumentsModule } from './modules/documents/documents.module';
       isGlobal: true,
       validate: validateEnv,
       envFilePath: '.env',
+    }),
+    BullModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        connection: parseRedisUrl(configService.get<string>('REDIS_URL')!),
+      }),
     }),
     PrismaModule,
     HealthModule,
