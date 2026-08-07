@@ -1,3 +1,6 @@
+import { InjectQueue } from '@nestjs/bullmq';
+import type { Queue } from 'bullmq';
+
 import {
   ForbiddenException,
   Injectable,
@@ -13,6 +16,7 @@ export class DocumentsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly storage: SupabaseStorageService,
+    @InjectQueue('document-processing') private readonly processingQueue: Queue,
   ) {}
 
   async createPendingDocument(
@@ -49,10 +53,16 @@ export class DocumentsService {
 
     const exists = await this.storage.fileExists(document.storagePath);
 
-    return this.prisma.document.update({
+    const updated = await this.prisma.document.update({
       where: { id: document.id },
       data: { status: exists ? 'UPLOADED' : 'FAILED' },
     });
+
+    if (exists) {
+      await this.processingQueue.add('process-document', { documentId: document.id });
+    }
+
+    return updated;
   }
 
   async findAllForUser(userId: string): Promise<Document[]> {
