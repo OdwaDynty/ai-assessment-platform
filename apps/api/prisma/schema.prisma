@@ -123,30 +123,29 @@ model Assessment {
   ownerId                String           @map("owner_id")
   owner                  User             @relation(fields: [ownerId], references: [id])
 
-  // Step 2: Assessment Basics
-  title                  String
-  moduleName             String           @map("module_name")
-  nqfLevel               NqfLevel         @map("nqf_level")
-  assessmentType         AssessmentType   @map("assessment_type")
-  totalDurationMinutes   Int              @map("total_duration_minutes")
-  totalMarks             Int              @map("total_marks")
+  // Step 2: Assessment Basics — nullable because drafts start empty and get
+  // filled in progressively as the educator completes each wizard step.
+  title                  String?
+  moduleName             String?          @map("module_name")
+  nqfLevel               NqfLevel?        @map("nqf_level")
+  assessmentType         AssessmentType?  @map("assessment_type")
+  totalDurationMinutes   Int?             @map("total_duration_minutes")
+  totalMarks             Int?             @map("total_marks")
 
   // Step 4: Academic Rigor — stored as simple percentage maps, e.g.
   // { "REMEMBER": 10, "UNDERSTAND": 20, "APPLY": 30, "ANALYZE": 20, "EVALUATE": 10, "CREATE": 10 }
   // Kept as Json rather than separate tables since these are just percentage
   // breakdowns read/written as a whole unit — no need to query into them individually.
-  bloomsDistribution     Json             @map("blooms_distribution")
-  difficultyDistribution Json             @map("difficulty_distribution")
-
-  status                 AssessmentStatus @default(DRAFT)
-  createdAt              DateTime         @default(now()) @map("created_at")
-  updatedAt              DateTime         @updatedAt @map("updated_at")
-
+  // Also nullable until the educator reaches Step 4.
+  bloomsDistribution     Json?            @map("blooms_distribution")
+  difficultyDistribution Json?            @map("difficulty_distribution")
   // Step 1: selected source documents (many-to-many via join table)
   sourceDocuments        AssessmentDocument[]
 
   // Step 3: question type breakdown (one row per selected type)
   questionTypeConfigs    AssessmentQuestionTypeConfig[]
+
+  learningOutcomes       LearningOutcome[]
 
   @@map("assessments")
 }
@@ -181,5 +180,26 @@ model AssessmentQuestionTypeConfig {
   // Prevents configuring the same question type twice for one assessment.
   @@unique([assessmentId, questionType])
   @@map("assessment_question_type_configs")
+}
+
+// Structured learning outcomes for an Assessment, captured in Step 2 of the
+// wizard. Each outcome gets a stable code (LO1, LO2, ...) scoped to its
+// assessment, so Phase 8's Question model can reference individual outcomes
+// via a real foreign key — enabling question-to-outcome mapping and, later,
+// validation that Bloom's-level targeting actually matches outcome verbs.
+model LearningOutcome {
+  id           String     @id @default(uuid())
+  assessmentId String     @map("assessment_id")
+  assessment   Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  code         String     // e.g. "LO1", "LO2" — human-readable, scoped per assessment
+  description  String     // the actual outcome statement, e.g. "Explain the ethical implications of..."
+  orderIndex   Int        @map("order_index") // preserves the order educator entered them in
+
+  createdAt    DateTime   @default(now()) @map("created_at")
+  updatedAt    DateTime   @updatedAt @map("updated_at")
+
+  // Prevents duplicate codes within the same assessment (e.g. two "LO1"s).
+  @@unique([assessmentId, code])
+  @@map("learning_outcomes")
 }
 
