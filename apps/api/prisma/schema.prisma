@@ -40,6 +40,7 @@ model User {
   createdAt     DateTime  @default(now()) @map("created_at")
   updatedAt     DateTime  @updatedAt @map("updated_at")
   documents     Document[]
+  assessments Assessment[]
 
   @@map("users")
 }
@@ -58,6 +59,7 @@ model Document {
   updatedAt     DateTime       @updatedAt @map("updated_at")
   processingError String? @map("processing_error")
   chunks DocumentChunk[]
+  assessmentLinks AssessmentDocument[]
 
   @@map("documents")
 }
@@ -74,3 +76,110 @@ model DocumentChunk {
 
   @@map("document_chunks")
 }
+
+// ── Assessment Configuration Enums ─────────────────────────────────
+// South African higher-education NQF levels this platform targets.
+enum NqfLevel {
+  LEVEL_5
+  LEVEL_6
+  LEVEL_7
+  LEVEL_8
+  LEVEL_9
+  LEVEL_10
+}
+
+// The overall category of assessment being generated.
+enum AssessmentType {
+  TEST
+  EXAM
+  ASSIGNMENT
+  QUIZ
+}
+
+// Every question type the platform can generate, including the new
+// scenario-based type — these require the AI to construct a realistic
+// situation grounded in source material and pose an applied-reasoning question.
+enum QuestionType {
+  MCQ
+  SHORT_ANSWER
+  ESSAY
+  TRUE_FALSE
+  SCENARIO_BASED
+}
+
+// Lifecycle status of an Assessment record. DRAFT = wizard in progress/saved,
+// GENERATING/GENERATED/FAILED are used once Phase 8 generation kicks in.
+enum AssessmentStatus {
+  DRAFT
+  GENERATING
+  GENERATED
+  FAILED
+}
+
+// ── Assessment Configuration Models ────────────────────────────────
+
+model Assessment {
+  id                     String           @id @default(uuid())
+  ownerId                String           @map("owner_id")
+  owner                  User             @relation(fields: [ownerId], references: [id])
+
+  // Step 2: Assessment Basics
+  title                  String
+  moduleName             String           @map("module_name")
+  nqfLevel               NqfLevel         @map("nqf_level")
+  assessmentType         AssessmentType   @map("assessment_type")
+  totalDurationMinutes   Int              @map("total_duration_minutes")
+  totalMarks             Int              @map("total_marks")
+
+  // Step 4: Academic Rigor — stored as simple percentage maps, e.g.
+  // { "REMEMBER": 10, "UNDERSTAND": 20, "APPLY": 30, "ANALYZE": 20, "EVALUATE": 10, "CREATE": 10 }
+  // Kept as Json rather than separate tables since these are just percentage
+  // breakdowns read/written as a whole unit — no need to query into them individually.
+  bloomsDistribution     Json             @map("blooms_distribution")
+  difficultyDistribution Json             @map("difficulty_distribution")
+
+  status                 AssessmentStatus @default(DRAFT)
+  createdAt              DateTime         @default(now()) @map("created_at")
+  updatedAt              DateTime         @updatedAt @map("updated_at")
+
+  // Step 1: selected source documents (many-to-many via join table)
+  sourceDocuments        AssessmentDocument[]
+
+  // Step 3: question type breakdown (one row per selected type)
+  questionTypeConfigs    AssessmentQuestionTypeConfig[]
+
+  @@map("assessments")
+}
+
+// Join table linking an Assessment to the Documents chosen as source
+// material in Step 1 of the wizard. Many-to-many: one assessment can draw
+// from multiple documents, and a document can be reused across assessments.
+model AssessmentDocument {
+  id           String     @id @default(uuid())
+  assessmentId String     @map("assessment_id")
+  assessment   Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  documentId   String     @map("document_id")
+  document     Document   @relation(fields: [documentId], references: [id])
+  createdAt    DateTime   @default(now()) @map("created_at")
+
+  // Prevents the same document being linked twice to the same assessment.
+  @@unique([assessmentId, documentId])
+  @@map("assessment_documents")
+}
+
+// One row per question type the educator configured in Step 3, e.g.
+// { questionType: MCQ, questionCount: 10, marksPerQuestion: 2 }
+// { questionType: SCENARIO_BASED, questionCount: 3, marksPerQuestion: 10 }
+model AssessmentQuestionTypeConfig {
+  id               String       @id @default(uuid())
+  assessmentId     String       @map("assessment_id")
+  assessment       Assessment   @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  questionType     QuestionType @map("question_type")
+  questionCount    Int          @map("question_count")
+  marksPerQuestion Int          @map("marks_per_question")
+
+  // Prevents configuring the same question type twice for one assessment.
+  @@unique([assessmentId, questionType])
+  @@map("assessment_question_type_configs")
+}
+
