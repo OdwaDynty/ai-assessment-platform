@@ -9,6 +9,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
 import { DocumentsModule } from './modules/documents/documents.module';
 import { KnowledgeBaseModule } from './modules/knowledge-base/knowledge-base.module';
+import { AssessmentsModule } from './modules/assessments/assessments.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { KnowledgeBaseModule } from './modules/knowledge-base/knowledge-base.mod
     UsersModule,
     DocumentsModule,
     KnowledgeBaseModule,
+    AssessmentsModule,
   ],
 })
 export class AppModule {}

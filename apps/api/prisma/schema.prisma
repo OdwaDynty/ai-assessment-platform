@@ -139,6 +139,9 @@ model Assessment {
   // Also nullable until the educator reaches Step 4.
   bloomsDistribution     Json?            @map("blooms_distribution")
   difficultyDistribution Json?            @map("difficulty_distribution")
+  status                 AssessmentStatus @default(DRAFT)
+  createdAt              DateTime         @default(now()) @map("created_at")
+  updatedAt              DateTime         @updatedAt @map("updated_at")
   // Step 1: selected source documents (many-to-many via join table)
   sourceDocuments        AssessmentDocument[]
 
