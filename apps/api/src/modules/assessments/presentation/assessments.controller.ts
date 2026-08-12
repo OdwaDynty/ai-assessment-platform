@@ -4,7 +4,7 @@
 // DocumentsController and KnowledgeBaseController: SupabaseAuthGuard +
 // @CurrentUser() decorator + ZodValidationPipe for request validation.
 
-import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
 import { SupabaseAuthGuard } from '../../../common/guards/supabase-auth.guard';
 import { CurrentUser } from '../../../common/decorators/current-user.decorator';
 import { ZodValidationPipe } from '../../../common/pipes/zod-validation.pipe';
@@ -14,6 +14,10 @@ import {
   type CreateAssessmentDto,
 } from './dto/create-assessment.dto';
 import type { User } from '../../../../generated/prisma/client';
+import {
+  updateBasicsSchema,
+  type UpdateBasicsDto,
+} from './dto/update-basics.dto';
 
 @Controller('assessments')
 @UseGuards(SupabaseAuthGuard)
@@ -28,6 +32,17 @@ export class AssessmentsController {
     @Body(new ZodValidationPipe(createAssessmentSchema)) dto: CreateAssessmentDto,
   ) {
     return this.assessmentsService.createDraft(user.id, dto);
+  }
+
+  // PATCH /assessments/:id/basics — Step 2: update title, module, NQF
+  // level, assessment type, duration, total marks, and learning outcomes.
+  @Patch(':id/basics')
+  updateBasics(
+    @Param('id') id: string,
+    @CurrentUser() user: User,
+    @Body(new ZodValidationPipe(updateBasicsSchema)) dto: UpdateBasicsDto,
+  ) {
+    return this.assessmentsService.updateBasics(id, user.id, dto);
   }
 
   // GET /assessments — list all of the user's assessments (drafts and

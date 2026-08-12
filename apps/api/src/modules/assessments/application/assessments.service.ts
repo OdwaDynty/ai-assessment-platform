@@ -14,6 +14,7 @@ import {
 import { PrismaService } from '../../../prisma/prisma.service';
 import type { Assessment } from '../../../../generated/prisma/client';
 import type { CreateAssessmentDto } from '../presentation/dto/create-assessment.dto';
+import type { UpdateBasicsDto } from '../presentation/dto/update-basics.dto';
 
 @Injectable()
 export class AssessmentsService {
@@ -69,6 +70,74 @@ export class AssessmentsService {
     });
 
     return assessment;
+  }
+
+  /**
+   * Step 2: Updates an assessment's basics (title, module, NQF level,
+   * type, duration, marks) and replaces its full set of learning outcomes.
+   *
+   * Learning outcomes are fully replaced (delete + recreate) rather than
+   * incrementally patched, since this PATCH represents "here is the
+   * complete current state of Step 2" — this keeps the wizard simple to
+   * revisit/edit without needing separate add/remove/reorder endpoints,
+   * and avoids ever ending up with stale outcome rows from a previous edit.
+   */
+  async updateBasics(
+    assessmentId: string,
+    userId: string,
+    dto: UpdateBasicsDto,
+  ): Promise<Assessment> {
+    // Ownership check — reuses the same fetch-then-compare pattern as
+    // findOneForUser, but we only need the ownerId here, not the full
+    // relations, so we query directly rather than calling that method.
+    const existing = await this.prisma.assessment.findUnique({
+      where: { id: assessmentId },
+      select: { ownerId: true },
+    });
+
+    if (!existing) {
+      throw new NotFoundException('Assessment not found');
+    }
+    if (existing.ownerId !== userId) {
+      throw new ForbiddenException('You do not own this assessment');
+    }
+
+    // Update basics and replace learning outcomes in a single transaction,
+    // so we never end up with the basics saved but outcomes only half
+    // replaced (or vice versa) if something fails partway through.
+    const updated = await this.prisma.$transaction(async (tx) => {
+      const assessment = await tx.assessment.update({
+        where: { id: assessmentId },
+        data: {
+          title: dto.title,
+          moduleName: dto.moduleName,
+          nqfLevel: dto.nqfLevel,
+          assessmentType: dto.assessmentType,
+          totalDurationMinutes: dto.totalDurationMinutes,
+          totalMarks: dto.totalMarks,
+        },
+      });
+
+      // Delete all existing learning outcomes for this assessment, then
+      // recreate them from the submitted array. orderIndex is derived
+      // from array position, so the frontend never needs to manage it.
+      await tx.learningOutcome.deleteMany({
+        where: { assessmentId },
+      });
+
+      await tx.learningOutcome.createMany({
+        data: dto.learningOutcomes.map((outcome, index) => ({
+          assessmentId,
+          code: outcome.code,
+          description: outcome.description,
+          orderIndex: index,
+        })),
+      });
+
+      return assessment;
+    });
+
+    return updated;
   }
 
   /**
