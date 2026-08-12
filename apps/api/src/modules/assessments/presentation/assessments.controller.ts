@@ -19,6 +19,11 @@ import {
   type UpdateBasicsDto,
 } from './dto/update-basics.dto';
 
+import {
+  updateQuestionTypesSchema,
+  type UpdateQuestionTypesDto,
+} from './dto/update-question-types.dto';
+
 @Controller('assessments')
 @UseGuards(SupabaseAuthGuard)
 export class AssessmentsController {
@@ -43,6 +48,18 @@ export class AssessmentsController {
     @Body(new ZodValidationPipe(updateBasicsSchema)) dto: UpdateBasicsDto,
   ) {
     return this.assessmentsService.updateBasics(id, user.id, dto);
+  }
+
+// PATCH /assessments/:id/question-types — Step 3: configure question
+  // types, counts, and marks per question.
+  @Patch(':id/question-types')
+  updateQuestionTypes(
+    @Param('id') id: string,
+    @CurrentUser() user: User,
+    @Body(new ZodValidationPipe(updateQuestionTypesSchema))
+    dto: UpdateQuestionTypesDto,
+  ) {
+    return this.assessmentsService.updateQuestionTypes(id, user.id, dto);
   }
 
   // GET /assessments — list all of the user's assessments (drafts and

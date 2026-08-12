@@ -15,6 +15,7 @@ import { PrismaService } from '../../../prisma/prisma.service';
 import type { Assessment } from '../../../../generated/prisma/client';
 import type { CreateAssessmentDto } from '../presentation/dto/create-assessment.dto';
 import type { UpdateBasicsDto } from '../presentation/dto/update-basics.dto';
+import type { UpdateQuestionTypesDto } from '../presentation/dto/update-question-types.dto';
 
 @Injectable()
 export class AssessmentsService {
@@ -138,6 +139,69 @@ export class AssessmentsService {
     });
 
     return updated;
+  }
+
+/**
+   * Step 3: Replaces the assessment's full set of question type
+   * configurations (which types, how many of each, marks per question).
+   *
+   * Like updateBasics' learning outcomes handling, this is a full
+   * delete + recreate based on the submitted array, since the PATCH
+   * represents the complete current state of Step 3.
+   *
+   * Also computes a soft warning (not a hard error) if the configured
+   * marks don't add up to the assessment's totalMarks from Step 2 — the
+   * educator may still be iterating, so we inform rather than block.
+   */
+  async updateQuestionTypes(
+    assessmentId: string,
+    userId: string,
+    dto: UpdateQuestionTypesDto,
+  ): Promise<{ assessment: Assessment; marksWarning: string | null }> {
+    const existing = await this.prisma.assessment.findUnique({
+      where: { id: assessmentId },
+      select: { ownerId: true, totalMarks: true },
+    });
+
+    if (!existing) {
+      throw new NotFoundException('Assessment not found');
+    }
+    if (existing.ownerId !== userId) {
+      throw new ForbiddenException('You do not own this assessment');
+    }
+
+    const assessment = await this.prisma.$transaction(async (tx) => {
+      await tx.assessmentQuestionTypeConfig.deleteMany({
+        where: { assessmentId },
+      });
+
+      await tx.assessmentQuestionTypeConfig.createMany({
+        data: dto.questionTypes.map((qt) => ({
+          assessmentId,
+          questionType: qt.questionType,
+          questionCount: qt.questionCount,
+          marksPerQuestion: qt.marksPerQuestion,
+        })),
+      });
+
+      return tx.assessment.findUniqueOrThrow({ where: { id: assessmentId } });
+    });
+
+    // Soft validation: check whether configured marks reconcile with
+    // totalMarks set back in Step 2. Only meaningful if totalMarks was
+    // actually set (it's nullable until Step 2 is completed).
+    let marksWarning: string | null = null;
+    if (existing.totalMarks !== null) {
+      const configuredMarks = dto.questionTypes.reduce(
+        (sum, qt) => sum + qt.questionCount * qt.marksPerQuestion,
+        0,
+      );
+      if (configuredMarks !== existing.totalMarks) {
+        marksWarning = `Configured question marks (${configuredMarks}) do not match the assessment's total marks (${existing.totalMarks}).`;
+      }
+    }
+
+    return { assessment, marksWarning };
   }
 
   /**
