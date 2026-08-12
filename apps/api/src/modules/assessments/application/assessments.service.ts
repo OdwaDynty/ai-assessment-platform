@@ -16,6 +16,7 @@ import type { Assessment } from '../../../../generated/prisma/client';
 import type { CreateAssessmentDto } from '../presentation/dto/create-assessment.dto';
 import type { UpdateBasicsDto } from '../presentation/dto/update-basics.dto';
 import type { UpdateQuestionTypesDto } from '../presentation/dto/update-question-types.dto';
+import type { UpdateRigorDto } from '../presentation/dto/update-rigor.dto';
 
 @Injectable()
 export class AssessmentsService {
@@ -202,6 +203,42 @@ export class AssessmentsService {
     }
 
     return { assessment, marksWarning };
+  }
+
+  /**
+   * Step 4: Updates the assessment's academic rigor targets — Bloom's
+   * Taxonomy distribution and difficulty distribution. Both are stored
+   * as JSONB percentage maps (validated to sum to 100 at the DTO layer),
+   * since they're always read/written as a complete unit.
+   *
+   * Unlike Step 3's question types, there's nothing to delete/recreate
+   * here — these are simple scalar Json fields on the Assessment row
+   * itself, so this is a straightforward update.
+   */
+  async updateRigor(
+    assessmentId: string,
+    userId: string,
+    dto: UpdateRigorDto,
+  ): Promise<Assessment> {
+    const existing = await this.prisma.assessment.findUnique({
+      where: { id: assessmentId },
+      select: { ownerId: true },
+    });
+
+    if (!existing) {
+      throw new NotFoundException('Assessment not found');
+    }
+    if (existing.ownerId !== userId) {
+      throw new ForbiddenException('You do not own this assessment');
+    }
+
+    return this.prisma.assessment.update({
+      where: { id: assessmentId },
+      data: {
+        bloomsDistribution: dto.bloomsDistribution,
+        difficultyDistribution: dto.difficultyDistribution,
+      },
+    });
   }
 
   /**

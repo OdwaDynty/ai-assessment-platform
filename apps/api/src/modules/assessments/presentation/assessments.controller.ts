@@ -24,6 +24,11 @@ import {
   type UpdateQuestionTypesDto,
 } from './dto/update-question-types.dto';
 
+import {
+  updateRigorSchema,
+  type UpdateRigorDto,
+} from './dto/update-rigor.dto';
+
 @Controller('assessments')
 @UseGuards(SupabaseAuthGuard)
 export class AssessmentsController {
@@ -60,6 +65,17 @@ export class AssessmentsController {
     dto: UpdateQuestionTypesDto,
   ) {
     return this.assessmentsService.updateQuestionTypes(id, user.id, dto);
+  }
+
+  // PATCH /assessments/:id/rigor — Step 4: set Bloom's Taxonomy and
+  // difficulty distribution targets.
+  @Patch(':id/rigor')
+  updateRigor(
+    @Param('id') id: string,
+    @CurrentUser() user: User,
+    @Body(new ZodValidationPipe(updateRigorSchema)) dto: UpdateRigorDto,
+  ) {
+    return this.assessmentsService.updateRigor(id, user.id, dto);
   }
 
   // GET /assessments — list all of the user's assessments (drafts and
