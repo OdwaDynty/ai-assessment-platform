@@ -149,6 +149,7 @@ model Assessment {
   questionTypeConfigs    AssessmentQuestionTypeConfig[]
 
   learningOutcomes       LearningOutcome[]
+  questions        Question[]
 
   @@map("assessments")
 }
@@ -176,9 +177,18 @@ model AssessmentQuestionTypeConfig {
   id               String       @id @default(uuid())
   assessmentId     String       @map("assessment_id")
   assessment       Assessment   @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
-  questionType     QuestionType @map("question_type")
-  questionCount    Int          @map("question_count")
-  marksPerQuestion Int          @map("marks_per_question")
+  
+ questionType     QuestionType @map("question_type")
+  questionCount    Int        @map("question_count")
+  marksPerQuestion Int        @map("marks_per_question")
+
+  // Tracks Phase 8 generation progress for THIS question type's batch.
+  // Generation is batched per config (one AI call generates all
+  // questionCount questions of this type together), so each type can
+  // succeed or fail independently of the others.
+  generationStatus GenerationStatus @default(PENDING) @map("generation_status")
+  generationError  String?          @map("generation_error")
+  questions        Question[]
 
   // Prevents configuring the same question type twice for one assessment.
   @@unique([assessmentId, questionType])
@@ -201,8 +211,100 @@ model LearningOutcome {
   createdAt    DateTime   @default(now()) @map("created_at")
   updatedAt    DateTime   @updatedAt @map("updated_at")
 
+  
+  questionLinks QuestionLearningOutcome[]
+
   // Prevents duplicate codes within the same assessment (e.g. two "LO1"s).
   @@unique([assessmentId, code])
   @@map("learning_outcomes")
+}
+
+// ── Question Generation Enums ──────────────────────────────────────
+// Matches the keys used in Assessment.bloomsDistribution /
+// difficultyDistribution JSON maps, but as a proper enum here since
+// each generated Question is tagged with a single concrete value,
+// not a percentage distribution.
+enum BloomsLevel {
+  REMEMBER
+  UNDERSTAND
+  APPLY
+  ANALYZE
+  EVALUATE
+  CREATE
+}
+
+enum DifficultyLevel {
+  EASY
+  MEDIUM
+  HARD
+}
+
+// Tracks generation progress per question-type batch, since generation
+// is batched per AssessmentQuestionTypeConfig (one AI call per type),
+// not per individual question or per whole assessment.
+enum GenerationStatus {
+  PENDING
+  GENERATING
+  GENERATED
+  FAILED
+}
+
+// ── Question Generation Models ─────────────────────────────────────
+
+model Question {
+  id                 String       @id @default(uuid())
+  assessmentId       String       @map("assessment_id")
+  assessment         Assessment   @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+
+  // Which Step 3 config this question was generated for -- links back
+  // to the question type, and lets us regenerate/retry a single batch
+  // without touching questions from other types.
+  questionTypeConfigId String     @map("question_type_config_id")
+  questionTypeConfig  AssessmentQuestionTypeConfig @relation(fields: [questionTypeConfigId], references: [id], onDelete: Cascade)
+
+  questionText       String       @map("question_text")
+  marks              Int
+
+  // Tagged per-question so the ACTUAL generated distribution can later
+  // be compared against the TARGET distribution set in Step 4.
+  bloomsLevel        BloomsLevel  @map("blooms_level")
+  difficulty         DifficultyLevel
+
+  // Type-specific structured content, e.g. MCQ options as
+  // [{ "label": "A", "text": "...", "isCorrect": true }, ...].
+  // Kept as Json since the shape genuinely varies by question type
+  // (MCQ needs options, true/false needs a boolean, essay/scenario
+  // need neither) -- a single flexible field is simpler than several
+  // mostly-null type-specific columns.
+  optionsData        Json?        @map("options_data")
+
+  // The memorandum / marking guide, generated alongside the question
+  // itself so it stays coherent with the exact question phrasing and
+  // retrieved source context. For MCQ/true-false this may just restate
+  // the correct answer; for essay/scenario it's a fuller marking rubric.
+  memorandum         String
+
+  orderIndex         Int          @map("order_index")
+  createdAt          DateTime     @default(now()) @map("created_at")
+  updatedAt          DateTime     @updatedAt @map("updated_at")
+
+  learningOutcomeLinks QuestionLearningOutcome[]
+
+  @@map("questions")
+}
+
+// Join table: which learning outcome(s) each question targets.
+// Many-to-many, since a single question can reasonably address more
+// than one stated outcome (e.g. a scenario question that both explains
+// AND critically evaluates).
+model QuestionLearningOutcome {
+  id                String          @id @default(uuid())
+  questionId        String          @map("question_id")
+  question          Question        @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  learningOutcomeId String          @map("learning_outcome_id")
+  learningOutcome   LearningOutcome @relation(fields: [learningOutcomeId], references: [id], onDelete: Cascade)
+
+  @@unique([questionId, learningOutcomeId])
+  @@map("question_learning_outcomes")
 }
 
