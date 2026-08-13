@@ -10,6 +10,7 @@
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Step1SourceDocuments } from './steps/step1-source-documents';
+import { Step2Basics } from './steps/step2-basics';
 
 const STEP_LABELS = [
   'Source Material',
@@ -39,9 +40,15 @@ export function AssessmentWizard() {
         {currentStep === 1 && (
           <Step1SourceDocuments onCreated={handleStep1Created} />
         )}
-        {currentStep === 2 && (
+        {currentStep === 2 && assessmentId && (
+          <Step2Basics
+            assessmentId={assessmentId}
+            onCompleted={() => setCurrentStep(3)}
+          />
+        )}
+        {currentStep === 3 && (
           <p className="text-sm text-muted-foreground">
-            Step 2 (Basics) coming next — assessment id: {assessmentId}
+            Step 3 (Question Types) coming next.
           </p>
         )}
       </CardContent>
