@@ -13,6 +13,7 @@ import { Step1SourceDocuments } from './steps/step1-source-documents';
 import { Step2Basics } from './steps/step2-basics';
 import { Step3QuestionTypes } from './steps/step3-question-types';
 import { Step4Rigor } from './steps/step4-rigor';
+import { Step5Review } from './steps/step5-review';
 
 const STEP_LABELS = [
   'Source Material',
@@ -60,10 +61,8 @@ export function AssessmentWizard() {
             onCompleted={() => setCurrentStep(5)}
           />
         )}
-        {currentStep === 5 && (
-          <p className="text-sm text-muted-foreground">
-            Step 5 (Review) coming next.
-          </p>
+        {currentStep === 5 && assessmentId && (
+          <Step5Review assessmentId={assessmentId} />
         )}
       </CardContent>
     </Card>
