@@ -30,6 +30,8 @@ import { SupabaseStorageService } from '../documents/infrastructure/supabase-sto
     DocumentProcessingProcessor,
     SupabaseStorageService,
   ],
-  exports: [BullModule],
+  // RetrievalService is exported so other modules (e.g. GenerationModule
+  // in Phase 8) can reuse Phase 6's semantic search without duplicating it.
+  exports: [BullModule, RetrievalService],
 })
 export class KnowledgeBaseModule {}

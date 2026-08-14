@@ -110,7 +110,7 @@ export class RetrievalService {
         FROM document_chunks dc
         INNER JOIN documents d ON d.id = dc.document_id
         WHERE d.owner_id = ${userId}
-          AND dc.document_id = ${documentId}::uuid
+            AND dc.document_id = ${documentId}
         ORDER BY distance ASC
         LIMIT ${limit}
       `;
