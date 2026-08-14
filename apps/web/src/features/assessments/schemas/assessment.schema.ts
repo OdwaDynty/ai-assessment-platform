@@ -149,6 +149,8 @@ export interface QuestionTypeConfigRecord {
   questionType: (typeof QUESTION_TYPES)[number];
   questionCount: number;
   marksPerQuestion: number;
+  generationStatus: 'PENDING' | 'GENERATING' | 'GENERATED' | 'FAILED';
+  generationError: string | null;
 }
 
 export interface LearningOutcomeRecord {
@@ -164,4 +166,52 @@ export interface AssessmentDetail extends AssessmentRecord {
   sourceDocuments: AssessmentDocumentLink[];
   questionTypeConfigs: QuestionTypeConfigRecord[];
   learningOutcomes: LearningOutcomeRecord[];
+  questions: QuestionRecord[];
 }
+
+export interface QuestionLearningOutcomeLink {
+  id: string;
+  learningOutcome: {
+    id: string;
+    code: string;
+    description: string;
+  };
+}
+
+export interface QuestionRecord {
+  id: string;
+  assessmentId: string;
+  questionTypeConfigId: string;
+  questionText: string;
+  marks: number;
+  bloomsLevel: (typeof BLOOMS_LEVELS)[number];
+  difficulty: (typeof DIFFICULTY_LEVELS)[number];
+  optionsData: unknown;
+  memorandum: string;
+  orderIndex: number;
+  learningOutcomeLinks: QuestionLearningOutcomeLink[];
+}
+
+export interface QuestionLearningOutcomeLink {
+  id: string;
+  learningOutcome: {
+    id: string;
+    code: string;
+    description: string;
+  };
+}
+
+export interface QuestionRecord {
+  id: string;
+  assessmentId: string;
+  questionTypeConfigId: string;
+  questionText: string;
+  marks: number;
+  bloomsLevel: (typeof BLOOMS_LEVELS)[number];
+  difficulty: (typeof DIFFICULTY_LEVELS)[number];
+  optionsData: unknown;
+  memorandum: string;
+  orderIndex: number;
+  learningOutcomeLinks: QuestionLearningOutcomeLink[];
+}
+

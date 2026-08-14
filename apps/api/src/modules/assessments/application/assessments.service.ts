@@ -253,6 +253,17 @@ export class AssessmentsService {
         sourceDocuments: { include: { document: true } },
         questionTypeConfigs: true,
         learningOutcomes: { orderBy: { orderIndex: 'asc' } },
+        // Phase 8: include generated questions (once they exist) along
+        // with which learning outcome(s) each one targets, so the
+        // review screen can display everything without a separate call.
+        questions: {
+          orderBy: { orderIndex: 'asc' },
+          include: {
+            learningOutcomeLinks: {
+              include: { learningOutcome: true },
+            },
+          },
+        },
       },
     });
 

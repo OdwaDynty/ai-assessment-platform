@@ -1,30 +1,50 @@
 // apps/web/src/features/assessments/components/steps/step5-review.tsx
 //
-// Step 5 of the Assessment Configuration wizard: final review screen.
-// Pulls the complete assessment via useAssessment and displays every
-// configured section (basics, source documents, learning outcomes,
-// question types, rigor) for the educator to confirm before generation.
-// Phase 8 (actual AI generation) doesn't exist yet, so the final action
-// here just marks the wizard as complete and returns to the dashboard.
+// Step 5 of the Assessment Configuration wizard: final review screen,
+// now extended for Phase 8 to trigger AI generation and display the
+// generated questions once available. Polls useAssessment while
+// generation is in progress so status updates appear live without a
+// manual refresh.
 
 'use client';
 
+import { useEffect } from 'react';
 import Link from 'next/link';
 import { useAssessment } from '../../api/use-assessment';
+import { useGenerateAssessment } from '../../api/use-generate-assessment';
 import {
   QUESTION_TYPE_LABELS,
   type QUESTION_TYPES,
 } from '../../schemas/assessment.schema';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 
 interface Step5ReviewProps {
   assessmentId: string;
 }
 
+// Polling interval while generation is in progress. 3 seconds is
+// frequent enough to feel responsive without hammering the API.
+const POLL_INTERVAL_MS = 3000;
+
 export function Step5Review({ assessmentId }: Step5ReviewProps) {
-  const { data: assessment, isLoading, isError } = useAssessment(assessmentId);
+  const { data: assessment, isLoading, isError, refetch } = useAssessment(assessmentId);
+  const { mutate: generate, isPending: isTriggering, error: triggerError } =
+    useGenerateAssessment();
+
+  const isGenerating = assessment?.status === 'GENERATING';
+
+  // Poll while generation is running. Stops automatically once the
+  // assessment's status leaves GENERATING (either GENERATED or FAILED).
+  useEffect(() => {
+    if (!isGenerating) return;
+    const interval = setInterval(() => {
+      refetch();
+    }, POLL_INTERVAL_MS);
+    return () => clearInterval(interval);
+  }, [isGenerating, refetch]);
 
   if (isLoading) {
     return <p className="text-muted-foreground">Loading assessment...</p>;
@@ -93,11 +113,14 @@ export function Step5Review({ assessmentId }: Step5ReviewProps) {
           Question types
         </h4>
         {assessment.questionTypeConfigs.map((qt) => (
-          <p key={qt.id} className="text-sm">
-            {QUESTION_TYPE_LABELS[qt.questionType as (typeof QUESTION_TYPES)[number]]}
-            : {qt.questionCount} × {qt.marksPerQuestion} marks ={' '}
-            {qt.questionCount * qt.marksPerQuestion} marks
-          </p>
+          <div key={qt.id} className="flex items-center gap-2">
+            <p className="text-sm flex-1">
+              {QUESTION_TYPE_LABELS[qt.questionType as (typeof QUESTION_TYPES)[number]]}
+              : {qt.questionCount} × {qt.marksPerQuestion} marks ={' '}
+              {qt.questionCount * qt.marksPerQuestion} marks
+            </p>
+            <GenerationStatusBadge status={qt.generationStatus} />
+          </div>
         ))}
         <p className={`text-sm ${marksMismatch ? 'text-amber-600' : 'text-muted-foreground'}`}>
           Total configured: {configuredMarks} / {assessment.totalMarks} marks
@@ -139,18 +162,107 @@ export function Step5Review({ assessmentId }: Step5ReviewProps) {
 
       <Separator />
 
+      {/* Generation trigger + status */}
       <Card>
-        <CardContent className="py-4">
-          <p className="text-sm text-muted-foreground">
-            This assessment is fully configured and ready for AI generation.
-            Generation isn't available yet — check back once Phase 8 ships.
-          </p>
+        <CardContent className="py-4 space-y-3">
+          {assessment.status === 'DRAFT' && (
+            <>
+              <p className="text-sm text-muted-foreground">
+                This assessment is fully configured and ready for AI generation.
+              </p>
+              <Button
+                onClick={() => generate(assessmentId)}
+                disabled={isTriggering}
+              >
+                {isTriggering ? 'Starting...' : 'Generate Assessment'}
+              </Button>
+              {triggerError && (
+                <p className="text-sm text-red-600">
+                  {triggerError instanceof Error
+                    ? triggerError.message
+                    : 'Failed to start generation'}
+                </p>
+              )}
+            </>
+          )}
+
+          {isGenerating && (
+            <p className="text-sm text-blue-600">
+              Generating questions... this page will update automatically.
+            </p>
+          )}
+
+          {assessment.status === 'GENERATED' && (
+            <p className="text-sm text-green-600">
+              Generation complete — {assessment.questions.length} question(s) generated.
+            </p>
+          )}
+
+          {assessment.status === 'FAILED' && (
+            <>
+              <p className="text-sm text-red-600">
+                Generation failed for one or more question types. See details below.
+              </p>
+              <Button onClick={() => generate(assessmentId)} disabled={isTriggering}>
+                {isTriggering ? 'Retrying...' : 'Retry Generation'}
+              </Button>
+            </>
+          )}
         </CardContent>
       </Card>
 
+      {/* Generated questions display */}
+      {assessment.questions.length > 0 && (
+        <>
+          <Separator />
+          <section className="space-y-4">
+            <h4 className="text-sm font-semibold text-muted-foreground">
+              Generated questions ({assessment.questions.length})
+            </h4>
+            {assessment.questions.map((q, i) => (
+              <Card key={q.id}>
+                <CardContent className="py-4 space-y-2">
+                  <div className="flex items-start justify-between gap-2">
+                    <p className="text-sm font-medium flex-1">
+                      Q{i + 1}. {q.questionText}
+                    </p>
+                    <Badge variant="outline">{q.marks} marks</Badge>
+                  </div>
+                  <div className="flex gap-2 flex-wrap">
+                    <Badge variant="outline">{q.bloomsLevel}</Badge>
+                    <Badge variant="outline">{q.difficulty}</Badge>
+                    {q.learningOutcomeLinks.map((link) => (
+                      <Badge key={link.id} variant="outline">
+                        {link.learningOutcome.code}
+                      </Badge>
+                    ))}
+                  </div>
+                  <details className="text-sm">
+                    <summary className="cursor-pointer text-muted-foreground">
+                      Memorandum
+                    </summary>
+                    <p className="mt-1 whitespace-pre-wrap">{q.memorandum}</p>
+                  </details>
+                </CardContent>
+              </Card>
+            ))}
+          </section>
+        </>
+      )}
+
       <Link href="/dashboard">
-        <Button>Done — back to dashboard</Button>
+        <Button variant="outline">Back to dashboard</Button>
       </Link>
     </div>
   );
+}
+
+function GenerationStatusBadge({ status }: { status: string }) {
+  const variant =
+    status === 'GENERATED'
+      ? 'default'
+      : status === 'FAILED'
+        ? 'destructive'
+        : 'outline';
+  return <Badge variant={variant}>{status}</Badge>;
 }
