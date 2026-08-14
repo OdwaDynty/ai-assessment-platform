@@ -10,6 +10,7 @@ import { UsersModule } from './modules/users/users.module';
 import { DocumentsModule } from './modules/documents/documents.module';
 import { KnowledgeBaseModule } from './modules/knowledge-base/knowledge-base.module';
 import { AssessmentsModule } from './modules/assessments/assessments.module';
+import { GenerationModule } from './modules/generation/generation.module';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { AssessmentsModule } from './modules/assessments/assessments.module';
     DocumentsModule,
     KnowledgeBaseModule,
     AssessmentsModule,
+    GenerationModule,
   ],
 })
 export class AppModule {}
