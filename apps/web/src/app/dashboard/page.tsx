@@ -12,7 +12,7 @@ export default function DashboardPage() {
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-8">
-      <Card className="w-full max-w-md">
+      <Card className="w-full max-w-2xl">
         
         <CardHeader className="flex flex-row items-center justify-between">
            <CardTitle>Dashboard</CardTitle>
@@ -27,6 +27,9 @@ export default function DashboardPage() {
             </Link>
             <Link href="/dashboard/documents">
               <Button variant="outline">Documents</Button>
+            </Link>
+            <Link href="/dashboard/assessments">
+              <Button variant="outline">Assessments</Button>
             </Link>
             <SignOutButton />
           </div>
