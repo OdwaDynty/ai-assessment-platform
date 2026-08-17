@@ -37,10 +37,16 @@ export default function AdminUsersPage() {
   }
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-8">
+    <main className="flex min-h-screen flex-col items-center p-8 pt-16">
+      <div className="w-full max-w-3xl">
+        <h1 className="text-2xl font-semibold text-foreground mb-1">User Management</h1>
+        <p className="text-sm text-muted-foreground mb-6">
+          View and manage every user's role and access on the platform.
+        </p>
+      </div>
       <Card className="w-full max-w-3xl">
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>User Management</CardTitle>
+          <CardTitle>All users</CardTitle>
           <Link href="/dashboard">
             <Button variant="outline">Back</Button>
           </Link>

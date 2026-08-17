@@ -10,10 +10,16 @@ export default function ProfilePage() {
   const { data, isLoading, isError, error } = useCurrentUser();
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-8">
+    <main className="flex min-h-screen flex-col items-center p-8 pt-16">
+      <div className="w-full max-w-md">
+        <h1 className="text-2xl font-semibold text-foreground mb-1">My Profile</h1>
+        <p className="text-sm text-muted-foreground mb-6">
+          View and update your account details.
+        </p>
+      </div>
       <Card className="w-full max-w-md">
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>My Profile</CardTitle>
+          <CardTitle>Account details</CardTitle>
           <Link href="/dashboard">
             <Button variant="outline">Back</Button>
           </Link>
