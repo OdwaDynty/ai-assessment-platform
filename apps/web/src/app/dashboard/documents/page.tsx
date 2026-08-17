@@ -11,9 +11,14 @@ export default function DocumentsPage() {
   const { data, isLoading, isError } = useDocumentsList();
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center gap-6 p-8">
+  <main className="flex min-h-screen flex-col items-center gap-6 p-8 pt-16">
+      <div className="w-full max-w-2xl">
+        <h1 className="text-2xl font-semibold text-foreground mb-1">Documents</h1>
+        <p className="text-sm text-muted-foreground mb-6">
+          Upload source material to ground your AI-generated assessments in.
+        </p>
+      </div>
       <Card className="w-full max-w-2xl">
-        
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Upload Document</CardTitle>
           <Link href="/dashboard">

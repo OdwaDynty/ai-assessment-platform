@@ -11,11 +11,16 @@ export default function DashboardPage() {
   const { data, isLoading, isError, error } = useCurrentUser();
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-8">
+    <main className="flex min-h-screen flex-col items-center p-8 pt-16">
+      <div className="w-full max-w-2xl">
+        <h1 className="text-2xl font-semibold text-foreground mb-1">Dashboard</h1>
+        <p className="text-sm text-muted-foreground mb-6">
+          Welcome back — here's your account overview.
+        </p>
+      </div>
       <Card className="w-full max-w-2xl">
-        
         <CardHeader className="flex flex-row items-center justify-between">
-           <CardTitle>Dashboard</CardTitle>
+           <CardTitle>Account</CardTitle>
             <div className="flex gap-2">
               {data?.role === 'PLATFORM_ADMIN' && (
                 <Link href="/dashboard/admin/users">
