@@ -237,6 +237,8 @@ export function Step5Review({ assessmentId }: Step5ReviewProps) {
                       </Badge>
                     ))}
                   </div>
+                  <QuestionOptions optionsData={q.optionsData} />
+
                   <details className="text-sm">
                     <summary className="cursor-pointer text-muted-foreground">
                       Memorandum
@@ -265,4 +267,51 @@ function GenerationStatusBadge({ status }: { status: string }) {
         ? 'destructive'
         : 'outline';
   return <Badge variant={variant}>{status}</Badge>;
+}
+
+// Renders type-specific optionsData: MCQ shows labeled options with the
+// correct one highlighted; True/False shows the correct answer. Other
+// question types (SHORT_ANSWER, ESSAY, SCENARIO_BASED) have null
+// optionsData and render nothing here -- their answer lives entirely
+// in the memorandum.
+function QuestionOptions({ optionsData }: { optionsData: unknown }) {
+  if (!optionsData) return null;
+
+  // MCQ shape: array of { label, text, isCorrect }
+  if (Array.isArray(optionsData)) {
+    return (
+      <div className="space-y-1 pl-1">
+        {optionsData.map((option: { label: string; text: string; isCorrect: boolean }) => (
+          <div
+            key={option.label}
+            className={`text-sm flex gap-2 px-2 py-1 rounded ${
+              option.isCorrect
+                ? 'bg-green-50 text-green-800 font-medium'
+                : 'text-muted-foreground'
+            }`}
+          >
+            <span>{option.label}.</span>
+            <span>{option.text}</span>
+            {option.isCorrect && <span className="ml-auto text-xs">✓ Correct</span>}
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  // True/False shape: { correctAnswer: boolean }
+  if (
+    typeof optionsData === 'object' &&
+    optionsData !== null &&
+    'correctAnswer' in optionsData
+  ) {
+    const correctAnswer = (optionsData as { correctAnswer: boolean }).correctAnswer;
+    return (
+      <p className="text-sm text-green-700 font-medium">
+        Correct answer: {correctAnswer ? 'True' : 'False'}
+      </p>
+    );
+  }
+
+  return null;
 }
