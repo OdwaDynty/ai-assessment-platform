@@ -262,7 +262,7 @@ export function Step5Review({ assessmentId }: Step5ReviewProps) {
 function GenerationStatusBadge({ status }: { status: string }) {
   const variant =
     status === 'GENERATED'
-      ? 'default'
+      ? 'success'
       : status === 'FAILED'
         ? 'destructive'
         : 'outline';

@@ -64,6 +64,6 @@ export function AssessmentsTable({ assessments }: AssessmentsTableProps) {
 
 function StatusBadge({ status }: { status: string }) {
   const variant =
-    status === 'GENERATED' ? 'default' : status === 'FAILED' ? 'destructive' : 'outline';
+    status === 'GENERATED' ? 'success' : status === 'FAILED' ? 'destructive' : 'outline';
   return <Badge variant={variant}>{status}</Badge>;
 }
