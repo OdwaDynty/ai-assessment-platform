@@ -17,6 +17,8 @@ import type { CreateAssessmentDto } from '../presentation/dto/create-assessment.
 import type { UpdateBasicsDto } from '../presentation/dto/update-basics.dto';
 import type { UpdateQuestionTypesDto } from '../presentation/dto/update-question-types.dto';
 import type { UpdateRigorDto } from '../presentation/dto/update-rigor.dto';
+import type { UpdateQuestionDto } from '../presentation/dto/update-question.dto';
+import type { Question } from '../../../../generated/prisma/client';
 
 @Injectable()
 export class AssessmentsService {
@@ -237,6 +239,38 @@ export class AssessmentsService {
       data: {
         bloomsDistribution: dto.bloomsDistribution,
         difficultyDistribution: dto.difficultyDistribution,
+      },
+    });
+  }
+
+  /**
+   * Phase 9: manually edits a single generated question's text, marks,
+   * and/or memorandum. Ownership is checked via the question's parent
+   * assessment, since Question doesn't store ownerId directly.
+   */
+  async updateQuestion(
+    questionId: string,
+    userId: string,
+    dto: UpdateQuestionDto,
+  ): Promise<Question> {
+    const question = await this.prisma.question.findUnique({
+      where: { id: questionId },
+      include: { assessment: { select: { ownerId: true } } },
+    });
+
+    if (!question) {
+      throw new NotFoundException('Question not found');
+    }
+    if (question.assessment.ownerId !== userId) {
+      throw new ForbiddenException('You do not own this question');
+    }
+
+    return this.prisma.question.update({
+      where: { id: questionId },
+      data: {
+        ...(dto.questionText !== undefined && { questionText: dto.questionText }),
+        ...(dto.memorandum !== undefined && { memorandum: dto.memorandum }),
+        ...(dto.marks !== undefined && { marks: dto.marks }),
       },
     });
   }

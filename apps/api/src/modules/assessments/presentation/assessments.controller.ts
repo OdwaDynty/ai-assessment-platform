@@ -29,6 +29,11 @@ import {
   type UpdateRigorDto,
 } from './dto/update-rigor.dto';
 
+import {
+  updateQuestionSchema,
+  type UpdateQuestionDto,
+} from './dto/update-question.dto';
+
 @Controller('assessments')
 @UseGuards(SupabaseAuthGuard)
 export class AssessmentsController {
@@ -76,6 +81,20 @@ export class AssessmentsController {
     @Body(new ZodValidationPipe(updateRigorSchema)) dto: UpdateRigorDto,
   ) {
     return this.assessmentsService.updateRigor(id, user.id, dto);
+  }
+
+  // PATCH /assessments/questions/:questionId — Phase 9: manually edit a
+  // generated question's text, marks, or memorandum. Route is nested
+  // under /assessments (rather than a separate /questions resource)
+  // since AssessmentsController already owns the ownership-check
+  // pattern via the parent assessment.
+  @Patch('questions/:questionId')
+  updateQuestion(
+    @Param('questionId') questionId: string,
+    @CurrentUser() user: User,
+    @Body(new ZodValidationPipe(updateQuestionSchema)) dto: UpdateQuestionDto,
+  ) {
+    return this.assessmentsService.updateQuestion(questionId, user.id, dto);
   }
 
   // GET /assessments — list all of the user's assessments (drafts and

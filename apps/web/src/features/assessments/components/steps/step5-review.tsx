@@ -20,6 +20,9 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { useState } from 'react';
+import { useUpdateQuestion } from '../../api/use-update-question';
+import { Input } from '@/components/ui/input';
 
 interface Step5ReviewProps {
   assessmentId: string;
@@ -220,33 +223,7 @@ export function Step5Review({ assessmentId }: Step5ReviewProps) {
               Generated questions ({assessment.questions.length})
             </h4>
             {assessment.questions.map((q, i) => (
-              <Card key={q.id}>
-                <CardContent className="py-4 space-y-2">
-                  <div className="flex items-start justify-between gap-2">
-                    <p className="text-sm font-medium flex-1">
-                      Q{i + 1}. {q.questionText}
-                    </p>
-                    <Badge variant="outline">{q.marks} marks</Badge>
-                  </div>
-                  <div className="flex gap-2 flex-wrap">
-                    <Badge variant="outline">{q.bloomsLevel}</Badge>
-                    <Badge variant="outline">{q.difficulty}</Badge>
-                    {q.learningOutcomeLinks.map((link) => (
-                      <Badge key={link.id} variant="outline">
-                        {link.learningOutcome.code}
-                      </Badge>
-                    ))}
-                  </div>
-                  <QuestionOptions optionsData={q.optionsData} />
-
-                  <details className="text-sm">
-                    <summary className="cursor-pointer text-muted-foreground">
-                      Memorandum
-                    </summary>
-                    <p className="mt-1 whitespace-pre-wrap">{q.memorandum}</p>
-                  </details>
-                </CardContent>
-              </Card>
+              <EditableQuestionCard key={q.id} question={q} index={i} assessmentId={assessmentId} />
             ))}
           </section>
         </>
@@ -314,4 +291,134 @@ function QuestionOptions({ optionsData }: { optionsData: unknown }) {
   }
 
   return null;
+}
+
+// Renders a single generated question with an inline edit toggle.
+// Editing covers questionText, marks, and memorandum -- optionsData
+// (MCQ options/correct answer) is intentionally not editable here, per
+// the Phase 9 scoping decision to keep the first editing slice simple
+// and avoid the risk of a free-text edit producing zero or multiple
+// correct MCQ answers.
+function EditableQuestionCard({
+  question,
+  index,
+  assessmentId,
+}: {
+  question: import('../../schemas/assessment.schema').QuestionRecord;
+  index: number;
+  assessmentId: string;
+}) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [questionText, setQuestionText] = useState(question.questionText);
+  const [marks, setMarks] = useState(String(question.marks));
+  const [memorandum, setMemorandum] = useState(question.memorandum);
+
+  const { mutate, isPending, error } = useUpdateQuestion();
+
+  function handleSave() {
+    mutate(
+      {
+        questionId: question.id,
+        assessmentId,
+        values: {
+          questionText,
+          marks: Number(marks),
+          memorandum,
+        },
+      },
+      { onSuccess: () => setIsEditing(false) },
+    );
+  }
+
+  function handleCancel() {
+    setQuestionText(question.questionText);
+    setMarks(String(question.marks));
+    setMemorandum(question.memorandum);
+    setIsEditing(false);
+  }
+
+  if (isEditing) {
+    return (
+      <Card>
+        <CardContent className="py-4 space-y-3">
+          <p className="text-xs font-medium text-muted-foreground">Editing Q{index + 1}</p>
+
+          <div>
+            <label className="text-xs text-muted-foreground">Question text</label>
+            <textarea
+              value={questionText}
+              onChange={(e) => setQuestionText(e.target.value)}
+              className="w-full mt-1 rounded-md border border-input bg-background px-3 py-2 text-sm min-h-20"
+            />
+          </div>
+
+          <div>
+            <label className="text-xs text-muted-foreground">Marks</label>
+            <Input
+              type="number"
+              value={marks}
+              onChange={(e) => setMarks(e.target.value)}
+              className="w-24 mt-1"
+            />
+          </div>
+
+          <div>
+            <label className="text-xs text-muted-foreground">Memorandum</label>
+            <textarea
+              value={memorandum}
+              onChange={(e) => setMemorandum(e.target.value)}
+              className="w-full mt-1 rounded-md border border-input bg-background px-3 py-2 text-sm min-h-32"
+            />
+          </div>
+
+          {error && (
+            <p className="text-sm text-red-600">
+              {error instanceof Error ? error.message : 'Failed to save changes'}
+            </p>
+          )}
+
+          <div className="flex gap-2">
+            <Button onClick={handleSave} disabled={isPending}>
+              {isPending ? 'Saving...' : 'Save'}
+            </Button>
+            <Button variant="outline" onClick={handleCancel} disabled={isPending}>
+              Cancel
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card>
+      <CardContent className="py-4 space-y-2">
+        <div className="flex items-start justify-between gap-2">
+          <p className="text-sm font-medium flex-1">
+            Q{index + 1}. {question.questionText}
+          </p>
+          <Badge variant="outline">{question.marks} marks</Badge>
+        </div>
+        <div className="flex gap-2 flex-wrap">
+          <Badge variant="outline">{question.bloomsLevel}</Badge>
+          <Badge variant="outline">{question.difficulty}</Badge>
+          {question.learningOutcomeLinks.map((link) => (
+            <Badge key={link.id} variant="outline">
+              {link.learningOutcome.code}
+            </Badge>
+          ))}
+        </div>
+        <QuestionOptions optionsData={question.optionsData} />
+
+        <details className="text-sm">
+          <summary className="cursor-pointer text-muted-foreground">Memorandum</summary>
+          <p className="mt-1 whitespace-pre-wrap">{question.memorandum}</p>
+        </details>
+
+        <Button variant="outline" size="sm" onClick={() => setIsEditing(true)}>
+          Edit
+        </Button>
+      </CardContent>
+    </Card>
+  );
 }
