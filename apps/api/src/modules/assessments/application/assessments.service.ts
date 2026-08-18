@@ -276,6 +276,26 @@ export class AssessmentsService {
   }
 
   /**
+   * Phase 10: deletes a single generated question. Ownership checked
+   * via the question's parent assessment, same pattern as updateQuestion.
+   */
+  async deleteQuestion(questionId: string, userId: string): Promise<void> {
+    const question = await this.prisma.question.findUnique({
+      where: { id: questionId },
+      include: { assessment: { select: { ownerId: true } } },
+    });
+
+    if (!question) {
+      throw new NotFoundException('Question not found');
+    }
+    if (question.assessment.ownerId !== userId) {
+      throw new ForbiddenException('You do not own this question');
+    }
+
+    await this.prisma.question.delete({ where: { id: questionId } });
+  }
+
+  /**
    * Fetches a single assessment the user owns, including its linked
    * source documents, question type configs, and learning outcomes.
    * Used by the wizard's later steps and the final review screen.

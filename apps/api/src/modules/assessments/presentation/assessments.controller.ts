@@ -4,7 +4,7 @@
 // DocumentsController and KnowledgeBaseController: SupabaseAuthGuard +
 // @CurrentUser() decorator + ZodValidationPipe for request validation.
 
-import { Body, Controller, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
 import { SupabaseAuthGuard } from '../../../common/guards/supabase-auth.guard';
 import { CurrentUser } from '../../../common/decorators/current-user.decorator';
 import { ZodValidationPipe } from '../../../common/pipes/zod-validation.pipe';
@@ -95,6 +95,16 @@ export class AssessmentsController {
     @Body(new ZodValidationPipe(updateQuestionSchema)) dto: UpdateQuestionDto,
   ) {
     return this.assessmentsService.updateQuestion(questionId, user.id, dto);
+  }
+
+  // DELETE /assessments/questions/:questionId — Phase 10: remove a
+  // single generated question the educator doesn't want to keep.
+  @Delete('questions/:questionId')
+  deleteQuestion(
+    @Param('questionId') questionId: string,
+    @CurrentUser() user: User,
+  ) {
+    return this.assessmentsService.deleteQuestion(questionId, user.id);
   }
 
   // GET /assessments — list all of the user's assessments (drafts and

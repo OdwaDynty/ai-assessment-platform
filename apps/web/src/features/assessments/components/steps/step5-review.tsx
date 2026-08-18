@@ -23,6 +23,7 @@ import { Separator } from '@/components/ui/separator';
 import { useState } from 'react';
 import { useUpdateQuestion } from '../../api/use-update-question';
 import { Input } from '@/components/ui/input';
+import { useDeleteQuestion } from '../../api/use-delete-question';
 
 interface Step5ReviewProps {
   assessmentId: string;
@@ -314,6 +315,12 @@ function EditableQuestionCard({
   const [memorandum, setMemorandum] = useState(question.memorandum);
 
   const { mutate, isPending, error } = useUpdateQuestion();
+  const { mutate: deleteQuestion, isPending: isDeleting } = useDeleteQuestion();
+
+  function handleDelete() {
+    if (!confirm('Delete this question? This cannot be undone.')) return;
+    deleteQuestion({ questionId: question.id, assessmentId });
+  }
 
   function handleSave() {
     mutate(
@@ -415,9 +422,19 @@ function EditableQuestionCard({
           <p className="mt-1 whitespace-pre-wrap">{question.memorandum}</p>
         </details>
 
-        <Button variant="outline" size="sm" onClick={() => setIsEditing(true)}>
-          Edit
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" onClick={() => setIsEditing(true)}>
+            Edit
+          </Button>
+          <Button
+            variant="destructive"
+            size="sm"
+            onClick={handleDelete}
+            disabled={isDeleting}
+          >
+            {isDeleting ? 'Deleting...' : 'Delete'}
+          </Button>
+        </div>
       </CardContent>
     </Card>
   );
