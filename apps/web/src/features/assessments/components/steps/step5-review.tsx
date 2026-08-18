@@ -24,6 +24,7 @@ import { useState } from 'react';
 import { useUpdateQuestion } from '../../api/use-update-question';
 import { Input } from '@/components/ui/input';
 import { useDeleteQuestion } from '../../api/use-delete-question';
+import { useReorderQuestion } from '../../api/use-reorder-question';
 
 interface Step5ReviewProps {
   assessmentId: string;
@@ -224,7 +225,14 @@ export function Step5Review({ assessmentId }: Step5ReviewProps) {
               Generated questions ({assessment.questions.length})
             </h4>
             {assessment.questions.map((q, i) => (
-              <EditableQuestionCard key={q.id} question={q} index={i} assessmentId={assessmentId} />
+              <EditableQuestionCard
+                key={q.id}
+                question={q}
+                index={i}
+                assessmentId={assessmentId}
+                isFirst={i === 0}
+                isLast={i === assessment.questions.length - 1}
+              />
             ))}
           </section>
         </>
@@ -304,11 +312,15 @@ function EditableQuestionCard({
   question,
   index,
   assessmentId,
-}: {
+  isFirst,
+  isLast,
+  }: {
   question: import('../../schemas/assessment.schema').QuestionRecord;
   index: number;
   assessmentId: string;
-}) {
+  isFirst: boolean;
+  isLast: boolean;
+  }) {
   const [isEditing, setIsEditing] = useState(false);
   const [questionText, setQuestionText] = useState(question.questionText);
   const [marks, setMarks] = useState(String(question.marks));
@@ -316,6 +328,7 @@ function EditableQuestionCard({
 
   const { mutate, isPending, error } = useUpdateQuestion();
   const { mutate: deleteQuestion, isPending: isDeleting } = useDeleteQuestion();
+  const { mutate: reorderQuestion, isPending: isReordering } = useReorderQuestion();
 
   function handleDelete() {
     if (!confirm('Delete this question? This cannot be undone.')) return;
@@ -433,6 +446,26 @@ function EditableQuestionCard({
             disabled={isDeleting}
           >
             {isDeleting ? 'Deleting...' : 'Delete'}
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={isFirst || isReordering}
+            onClick={() =>
+              reorderQuestion({ questionId: question.id, assessmentId, direction: 'up' })
+            }
+          >
+            ↑
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={isLast || isReordering}
+            onClick={() =>
+              reorderQuestion({ questionId: question.id, assessmentId, direction: 'down' })
+            }
+          >
+            ↓
           </Button>
         </div>
       </CardContent>

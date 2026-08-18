@@ -19,6 +19,7 @@ import type { UpdateQuestionTypesDto } from '../presentation/dto/update-question
 import type { UpdateRigorDto } from '../presentation/dto/update-rigor.dto';
 import type { UpdateQuestionDto } from '../presentation/dto/update-question.dto';
 import type { Question } from '../../../../generated/prisma/client';
+import type { ReorderQuestionDto } from '../presentation/dto/reorder-question.dto';
 
 @Injectable()
 export class AssessmentsService {
@@ -293,6 +294,65 @@ export class AssessmentsService {
     }
 
     await this.prisma.question.delete({ where: { id: questionId } });
+  }
+
+  /**
+   * Phase 10: moves a question up or down one position within its
+   * assessment's question list, by swapping orderIndex with the
+   * adjacent question in that direction. No-op (returns silently) if
+   * the question is already at the top/bottom, since there's nothing
+   * to swap with.
+   */
+  async reorderQuestion(
+    questionId: string,
+    userId: string,
+    dto: ReorderQuestionDto,
+  ): Promise<void> {
+    const question = await this.prisma.question.findUnique({
+      where: { id: questionId },
+      include: { assessment: { select: { ownerId: true } } },
+    });
+
+    if (!question) {
+      throw new NotFoundException('Question not found');
+    }
+    if (question.assessment.ownerId !== userId) {
+      throw new ForbiddenException('You do not own this question');
+    }
+
+    // Find the adjacent question in the requested direction, scoped to
+    // the same assessment. "up" means the question with the next-lower
+    // orderIndex; "down" means the next-higher one.
+    const neighbor = await this.prisma.question.findFirst({
+      where: {
+        assessmentId: question.assessmentId,
+        orderIndex:
+          dto.direction === 'up'
+            ? { lt: question.orderIndex }
+            : { gt: question.orderIndex },
+      },
+      orderBy: {
+        orderIndex: dto.direction === 'up' ? 'desc' : 'asc',
+      },
+    });
+
+    // Already at the top/bottom -- nothing to swap with, so this is a
+    // silent no-op rather than an error (the UI just won't move it).
+    if (!neighbor) return;
+
+    // Swap orderIndex values in a transaction so we never end up with
+    // two questions sharing the same orderIndex if something fails
+    // partway through.
+    await this.prisma.$transaction([
+      this.prisma.question.update({
+        where: { id: question.id },
+        data: { orderIndex: neighbor.orderIndex },
+      }),
+      this.prisma.question.update({
+        where: { id: neighbor.id },
+        data: { orderIndex: question.orderIndex },
+      }),
+    ]);
   }
 
   /**

@@ -34,6 +34,11 @@ import {
   type UpdateQuestionDto,
 } from './dto/update-question.dto';
 
+import {
+  reorderQuestionSchema,
+  type ReorderQuestionDto,
+} from './dto/reorder-question.dto';
+
 @Controller('assessments')
 @UseGuards(SupabaseAuthGuard)
 export class AssessmentsController {
@@ -105,6 +110,17 @@ export class AssessmentsController {
     @CurrentUser() user: User,
   ) {
     return this.assessmentsService.deleteQuestion(questionId, user.id);
+  }
+
+  // PATCH /assessments/questions/:questionId/reorder — Phase 10: move a
+  // question up or down one position within its assessment.
+  @Patch('questions/:questionId/reorder')
+  reorderQuestion(
+    @Param('questionId') questionId: string,
+    @CurrentUser() user: User,
+    @Body(new ZodValidationPipe(reorderQuestionSchema)) dto: ReorderQuestionDto,
+  ) {
+    return this.assessmentsService.reorderQuestion(questionId, user.id, dto);
   }
 
   // GET /assessments — list all of the user's assessments (drafts and
