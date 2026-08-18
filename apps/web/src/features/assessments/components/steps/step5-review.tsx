@@ -326,6 +326,30 @@ function EditableQuestionCard({
   const [marks, setMarks] = useState(String(question.marks));
   const [memorandum, setMemorandum] = useState(question.memorandum);
 
+  // MCQ-specific editable state: only meaningful when question.optionsData
+  // is an array (MCQ type). Initialized from the current options, or a
+  // blank 4-option template if this question somehow has none.
+  const isMcq = Array.isArray(question.optionsData);
+  const [options, setOptions] = useState<Array<{ label: string; text: string; isCorrect: boolean }>>(
+    isMcq
+      ? (question.optionsData as Array<{ label: string; text: string; isCorrect: boolean }>)
+      : [
+          { label: 'A', text: '', isCorrect: true },
+          { label: 'B', text: '', isCorrect: false },
+          { label: 'C', text: '', isCorrect: false },
+          { label: 'D', text: '', isCorrect: false },
+        ],
+  );
+
+     function updateOptionText(index: number, text: string) {
+    setOptions((prev) => prev.map((o, i) => (i === index ? { ...o, text } : o)));
+    }
+
+  function setCorrectOption(index: number) {
+    setOptions((prev) => prev.map((o, i) => ({ ...o, isCorrect: i === index })));
+    }
+
+
   const { mutate, isPending, error } = useUpdateQuestion();
   const { mutate: deleteQuestion, isPending: isDeleting } = useDeleteQuestion();
   const { mutate: reorderQuestion, isPending: isReordering } = useReorderQuestion();
@@ -335,7 +359,7 @@ function EditableQuestionCard({
     deleteQuestion({ questionId: question.id, assessmentId });
   }
 
-  function handleSave() {
+ function handleSave() {
     mutate(
       {
         questionId: question.id,
@@ -344,6 +368,7 @@ function EditableQuestionCard({
           questionText,
           marks: Number(marks),
           memorandum,
+          ...(isMcq && { optionsData: options }),
         },
       },
       { onSuccess: () => setIsEditing(false) },
@@ -354,6 +379,9 @@ function EditableQuestionCard({
     setQuestionText(question.questionText);
     setMarks(String(question.marks));
     setMemorandum(question.memorandum);
+    if (isMcq) {
+      setOptions(question.optionsData as Array<{ label: string; text: string; isCorrect: boolean }>);
+    }
     setIsEditing(false);
   }
 
@@ -381,6 +409,31 @@ function EditableQuestionCard({
               className="w-24 mt-1"
             />
           </div>
+
+          {isMcq && (
+            <div className="space-y-2">
+              <label className="text-xs text-muted-foreground">
+                Options (select the correct one)
+              </label>
+              {options.map((option, i) => (
+                <div key={option.label} className="flex items-center gap-2">
+                  <input
+                    type="radio"
+                    name={`correct-option-${question.id}`}
+                    checked={option.isCorrect}
+                    onChange={() => setCorrectOption(i)}
+                    className="h-4 w-4"
+                  />
+                  <span className="w-6 text-sm text-muted-foreground">{option.label}.</span>
+                  <Input
+                    value={option.text}
+                    onChange={(e) => updateOptionText(i, e.target.value)}
+                    className="flex-1"
+                  />
+                </div>
+              ))}
+            </div>
+          )}
 
           <div>
             <label className="text-xs text-muted-foreground">Memorandum</label>

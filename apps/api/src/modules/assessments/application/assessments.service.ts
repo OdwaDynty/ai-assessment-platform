@@ -266,12 +266,13 @@ export class AssessmentsService {
       throw new ForbiddenException('You do not own this question');
     }
 
-    return this.prisma.question.update({
+   return this.prisma.question.update({
       where: { id: questionId },
       data: {
         ...(dto.questionText !== undefined && { questionText: dto.questionText }),
         ...(dto.memorandum !== undefined && { memorandum: dto.memorandum }),
         ...(dto.marks !== undefined && { marks: dto.marks }),
+        ...(dto.optionsData !== undefined && { optionsData: dto.optionsData }),
       },
     });
   }
