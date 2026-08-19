@@ -12,6 +12,7 @@ import { CurrentUser } from '../../../common/decorators/current-user.decorator';
 import { AssessmentsService } from '../../assessments/application/assessments.service';
 import { QuestionPaperBuilderService } from '../application/question-paper-builder.service';
 import type { User } from '../../../../generated/prisma/client';
+import { MemorandumBuilderService } from '../application/memorandum-builder.service';
 
 @Controller('assessments')
 @UseGuards(SupabaseAuthGuard)
@@ -19,6 +20,7 @@ export class ExportController {
   constructor(
     private readonly assessmentsService: AssessmentsService,
     private readonly questionPaperBuilder: QuestionPaperBuilderService,
+    private readonly memorandumBuilder: MemorandumBuilderService,
   ) {}
 
   // GET /assessments/:id/export/question-paper — downloads the
@@ -34,6 +36,28 @@ export class ExportController {
     const buffer = await Packer.toBuffer(document);
 
     const fileName = `${(assessment.title ?? 'assessment').replace(/[^a-z0-9]/gi, '_')}_question_paper.docx`;
+
+    res.set({
+      'Content-Type':
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'Content-Disposition': `attachment; filename="${fileName}"`,
+    });
+    res.send(buffer);
+  }
+
+  // GET /assessments/:id/export/memorandum — downloads the
+  // moderator-facing marking guide as a .docx file.
+  @Get(':id/export/memorandum')
+  async exportMemorandum(
+    @Param('id') id: string,
+    @CurrentUser() user: User,
+    @Res() res: Response,
+  ) {
+    const assessment = await this.assessmentsService.findOneForUser(id, user.id);
+    const document = this.memorandumBuilder.build(assessment);
+    const buffer = await Packer.toBuffer(document);
+
+    const fileName = `${(assessment.title ?? 'assessment').replace(/[^a-z0-9]/gi, '_')}_memorandum.docx`;
 
     res.set({
       'Content-Type':
