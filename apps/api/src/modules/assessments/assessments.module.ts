@@ -12,5 +12,8 @@ import { AssessmentsService } from './application/assessments.service';
 @Module({
   controllers: [AssessmentsController],
   providers: [AssessmentsService],
+  // Exported so other modules (e.g. ExportModule in Phase 11) can reuse
+  // the ownership-checked assessment-fetching logic without duplicating it.
+  exports: [AssessmentsService],
 })
 export class AssessmentsModule {}

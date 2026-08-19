@@ -11,6 +11,7 @@ import { DocumentsModule } from './modules/documents/documents.module';
 import { KnowledgeBaseModule } from './modules/knowledge-base/knowledge-base.module';
 import { AssessmentsModule } from './modules/assessments/assessments.module';
 import { GenerationModule } from './modules/generation/generation.module';
+import { ExportModule } from './modules/export/export.module';
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { GenerationModule } from './modules/generation/generation.module';
     KnowledgeBaseModule,
     AssessmentsModule,
     GenerationModule,
+    ExportModule
   ],
 })
 export class AppModule {}
