@@ -25,10 +25,58 @@ import { useUpdateQuestion } from '../../api/use-update-question';
 import { Input } from '@/components/ui/input';
 import { useDeleteQuestion } from '../../api/use-delete-question';
 import { useReorderQuestion } from '../../api/use-reorder-question';
+import { createClient } from '@/lib/supabase/client';
+import { env } from '@/lib/env';
+
+
 
 interface Step5ReviewProps {
   assessmentId: string;
 }
+
+
+// Downloads an export file (question paper or memorandum) by fetching it
+// with the auth header client-side, then triggering a browser download
+// via a temporary blob URL. Needed because these are authenticated GET
+// requests returning a binary file, not something a plain <a href> link
+// can handle directly (no way to attach an Authorization header to a
+// simple anchor tag navigation).
+async function downloadExport(
+  assessmentId: string,
+  type: 'question-paper' | 'memorandum',
+  fileName: string,
+) {
+  const supabase = createClient();
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
+  if (!session) {
+    throw new Error('Not authenticated');
+  }
+
+  const res = await fetch(
+    `${env.NEXT_PUBLIC_API_URL}/assessments/${assessmentId}/export/${type}`,
+    {
+      headers: { Authorization: `Bearer ${session.access_token}` },
+    },
+  );
+
+  if (!res.ok) {
+    throw new Error(`Failed to download ${type}: ${res.status}`);
+  }
+
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = fileName;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
+
 
 // Polling interval while generation is in progress. 3 seconds is
 // frequent enough to feel responsive without hammering the API.
@@ -197,10 +245,40 @@ export function Step5Review({ assessmentId }: Step5ReviewProps) {
             </p>
           )}
 
-          {assessment.status === 'GENERATED' && (
-            <p className="text-sm text-green-600">
-              Generation complete — {assessment.questions.length} question(s) generated.
-            </p>
+                    {assessment.status === 'GENERATED' && (
+            <div className="space-y-2">
+              <p className="text-sm text-green-600">
+                Generation complete — {assessment.questions.length} question(s) generated.
+              </p>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() =>
+                    downloadExport(
+                      assessmentId,
+                      'question-paper',
+                      `${assessment.title ?? 'assessment'}_question_paper.docx`,
+                    )
+                  }
+                >
+                  Download Question Paper
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() =>
+                    downloadExport(
+                      assessmentId,
+                      'memorandum',
+                      `${assessment.title ?? 'assessment'}_memorandum.docx`,
+                    )
+                  }
+                >
+                  Download Memorandum
+                </Button>
+              </div>
+            </div>
           )}
 
           {assessment.status === 'FAILED' && (
