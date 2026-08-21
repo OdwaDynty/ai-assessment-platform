@@ -12,6 +12,7 @@ import { KnowledgeBaseModule } from './modules/knowledge-base/knowledge-base.mod
 import { AssessmentsModule } from './modules/assessments/assessments.module';
 import { GenerationModule } from './modules/generation/generation.module';
 import { ExportModule } from './modules/export/export.module';
+import { QuestionBankModule } from './modules/question-bank/question-bank.module';
 
 @Module({
   imports: [
@@ -34,7 +35,8 @@ import { ExportModule } from './modules/export/export.module';
     KnowledgeBaseModule,
     AssessmentsModule,
     GenerationModule,
-    ExportModule
+    ExportModule,
+    QuestionBankModule,
   ],
 })
 export class AppModule {}
