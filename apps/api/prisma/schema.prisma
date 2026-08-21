@@ -41,6 +41,7 @@ model User {
   updatedAt     DateTime  @updatedAt @map("updated_at")
   documents     Document[]
   assessments Assessment[]
+  bankQuestions BankQuestion[]
 
   @@map("users")
 }
@@ -306,5 +307,38 @@ model QuestionLearningOutcome {
 
   @@unique([questionId, learningOutcomeId])
   @@map("question_learning_outcomes")
+}
+
+enum BankQuestionSource {
+  SAVED_FROM_ASSESSMENT
+  MANUALLY_CREATED
+}
+
+model BankQuestion {
+  id              String           @id @default(uuid())
+  ownerId         String           @map("owner_id")
+  owner           User             @relation(fields: [ownerId], references: [id])
+
+  questionText    String           @map("question_text")
+  marks           Int
+  questionType    QuestionType     @map("question_type")
+  bloomsLevel     BloomsLevel      @map("blooms_level")
+  difficulty      DifficultyLevel
+
+  optionsData     Json?            @map("options_data")
+  memorandum      String
+
+  source          BankQuestionSource @default(SAVED_FROM_ASSESSMENT) @map("source")
+
+  // Optional provenance: which assessment/question this was copied from,
+  // for reference only -- NOT a live link. If the original assessment or
+  // question is later deleted, this just becomes null (no cascade needed
+  // since it's purely informational, not a functional dependency).
+  sourceAssessmentTitle String?    @map("source_assessment_title")
+
+  createdAt       DateTime         @default(now()) @map("created_at")
+  updatedAt       DateTime         @updatedAt @map("updated_at")
+
+  @@map("bank_questions")
 }
 
