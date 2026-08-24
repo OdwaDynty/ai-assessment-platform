@@ -27,7 +27,7 @@ import { useDeleteQuestion } from '../../api/use-delete-question';
 import { useReorderQuestion } from '../../api/use-reorder-question';
 import { createClient } from '@/lib/supabase/client';
 import { env } from '@/lib/env';
-
+import { useSaveToBank } from '@/features/question-bank/api/use-save-to-bank';
 
 
 interface Step5ReviewProps {
@@ -431,6 +431,7 @@ function EditableQuestionCard({
   const { mutate, isPending, error } = useUpdateQuestion();
   const { mutate: deleteQuestion, isPending: isDeleting } = useDeleteQuestion();
   const { mutate: reorderQuestion, isPending: isReordering } = useReorderQuestion();
+    const { mutate: saveToBank, isPending: isSaving, isSuccess: isSaved } = useSaveToBank();
 
   function handleDelete() {
     if (!confirm('Delete this question? This cannot be undone.')) return;
@@ -597,6 +598,14 @@ function EditableQuestionCard({
             }
           >
             ↓
+          </Button>
+                    <Button
+            variant="outline"
+            size="sm"
+            onClick={() => saveToBank(question.id)}
+            disabled={isSaving || isSaved}
+          >
+            {isSaved ? 'Saved ✓' : isSaving ? 'Saving...' : 'Save to Bank'}
           </Button>
         </div>
       </CardContent>
