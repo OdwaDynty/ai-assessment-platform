@@ -36,6 +36,9 @@ export default function DashboardPage() {
             <Link href="/dashboard/assessments">
               <Button variant="outline">Assessments</Button>
             </Link>
+                        <Link href="/dashboard/question-bank">
+              <Button variant="outline">Question Bank</Button>
+            </Link>
             <SignOutButton />
           </div>
         </CardHeader>
