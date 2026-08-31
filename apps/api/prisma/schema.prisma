@@ -36,6 +36,7 @@ model User {
   role          UserRole  @default(EDUCATOR)
   isActive      Boolean   @default(true) @map("is_active")
   institutionId String?   @map("institution_id")
+  institution   Institution? @relation(fields: [institutionId], references: [id])
   lastLoginAt   DateTime? @map("last_login_at")
   createdAt     DateTime  @default(now()) @map("created_at")
   updatedAt     DateTime  @updatedAt @map("updated_at")
@@ -340,5 +341,18 @@ model BankQuestion {
   updatedAt       DateTime         @updatedAt @map("updated_at")
 
   @@map("bank_questions")
+}
+
+model Institution {
+  id        String   @id @default(uuid())
+  name      String
+  domain    String?  @unique @map("domain") // e.g. "university.ac.za", optional -- useful later for auto-assigning users by email domain, not required now
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  users     User[]
+
+  @@map("institutions")
 }
 
