@@ -41,11 +41,16 @@ export class UsersController {
     return this.usersService.updateOwnProfile(user.id, dto);
   }
 
-  @Get()
+    @Get()
   @UseGuards(RolesGuard)
   @Roles('PLATFORM_ADMIN', 'INSTITUTION_ADMIN')
-  findAll(@Query('page') page?: string, @Query('pageSize') pageSize?: string) {
+  findAll(
+    @CurrentUser() actingUser: User,
+    @Query('page') page?: string,
+    @Query('pageSize') pageSize?: string,
+  ) {
     return this.usersService.findAll(
+      actingUser,
       page ? parseInt(page, 10) : undefined,
       pageSize ? parseInt(pageSize, 10) : undefined,
     );
@@ -53,7 +58,7 @@ export class UsersController {
 
   @Patch(':id')
   @UseGuards(RolesGuard)
-  @Roles('PLATFORM_ADMIN')
+  @Roles('PLATFORM_ADMIN', 'INSTITUTION_ADMIN')
   adminUpdate(
     @Param('id') id: string,
     @Body(new ZodValidationPipe(adminUpdateUserSchema)) dto: AdminUpdateUserDto,

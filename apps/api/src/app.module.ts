@@ -13,6 +13,7 @@ import { AssessmentsModule } from './modules/assessments/assessments.module';
 import { GenerationModule } from './modules/generation/generation.module';
 import { ExportModule } from './modules/export/export.module';
 import { QuestionBankModule } from './modules/question-bank/question-bank.module';
+import { InstitutionsModule } from './modules/institutions/institutions.module';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { QuestionBankModule } from './modules/question-bank/question-bank.module
     GenerationModule,
     ExportModule,
     QuestionBankModule,
+    InstitutionsModule
   ],
 })
 export class AppModule {}
