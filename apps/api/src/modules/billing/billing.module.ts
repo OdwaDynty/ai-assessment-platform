@@ -1,0 +1,12 @@
+// apps/api/src/modules/billing/billing.module.ts
+
+import { Module } from '@nestjs/common';
+import { BillingController } from './presentation/billing.controller';
+import { BillingService } from './application/billing.service';
+
+@Module({
+  controllers: [BillingController],
+  providers: [BillingService],
+  exports: [BillingService],
+})
+export class BillingModule {}

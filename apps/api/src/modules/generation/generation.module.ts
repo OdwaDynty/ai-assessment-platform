@@ -12,14 +12,16 @@ import { GenerationController } from './presentation/generation.controller';
 import { GenerationService } from './application/generation.service';
 import { QuestionGenerationService } from './application/question-generation.service';
 import { QuestionGenerationProcessor } from './processors/question-generation.processor';
-import { KnowledgeBaseModule } from '../knowledge-base/knowledge-base.module';
 
+import { KnowledgeBaseModule } from '../knowledge-base/knowledge-base.module';
+import { BillingModule } from '../billing/billing.module';
 @Module({
   imports: [
     BullModule.registerQueue({
       name: 'question-generation',
     }),
     KnowledgeBaseModule,
+    BillingModule,
   ],
   controllers: [GenerationController],
   providers: [GenerationService, QuestionGenerationService, QuestionGenerationProcessor],

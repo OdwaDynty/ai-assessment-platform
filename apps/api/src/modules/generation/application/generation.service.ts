@@ -15,6 +15,7 @@ import {
 import { InjectQueue } from '@nestjs/bullmq';
 import type { Queue } from 'bullmq';
 import { PrismaService } from '../../../prisma/prisma.service';
+import { BillingService } from '../../billing/application/billing.service';
 
 // Job payload for each question-type batch. The processor looks up
 // everything else it needs (assessment details, source documents,
@@ -26,8 +27,9 @@ export interface GenerateQuestionsJobData {
 
 @Injectable()
 export class GenerationService {
-  constructor(
+    constructor(
     private readonly prisma: PrismaService,
+    private readonly billingService: BillingService,
     @InjectQueue('question-generation')
     private readonly generationQueue: Queue<GenerateQuestionsJobData>,
   ) {}
@@ -51,8 +53,17 @@ export class GenerationService {
     if (!assessment) {
       throw new NotFoundException('Assessment not found');
     }
-    if (assessment.ownerId !== userId) {
+   if (assessment.ownerId !== userId) {
       throw new ForbiddenException('You do not own this assessment');
+    }
+
+    // Enforce the FREE plan's monthly generation limit before doing
+    // any other work -- a user who's hit their limit shouldn't be told
+    // about missing wizard steps first, only to then hit a billing
+    // wall; the billing check is the more fundamental gate.
+    const { allowed, reason } = await this.billingService.canGenerateAssessment(userId);
+    if (!allowed) {
+      throw new BadRequestException(reason);
     }
 
     // Validate every wizard step has actually been completed -- generation

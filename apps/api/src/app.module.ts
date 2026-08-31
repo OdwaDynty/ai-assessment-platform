@@ -14,7 +14,7 @@ import { GenerationModule } from './modules/generation/generation.module';
 import { ExportModule } from './modules/export/export.module';
 import { QuestionBankModule } from './modules/question-bank/question-bank.module';
 import { InstitutionsModule } from './modules/institutions/institutions.module';
-
+import { BillingModule } from './modules/billing/billing.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -38,7 +38,8 @@ import { InstitutionsModule } from './modules/institutions/institutions.module';
     GenerationModule,
     ExportModule,
     QuestionBankModule,
-    InstitutionsModule
+    InstitutionsModule,
+    BillingModule,
   ],
 })
 export class AppModule {}

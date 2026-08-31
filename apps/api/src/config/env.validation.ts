@@ -16,6 +16,12 @@ export const envSchema = z.object({
 
   OPENAI_API_KEY: z.string().min(1),
   DOC_PROCESSOR_URL: z.string().url().default('http://localhost:8000'),
+  PAYFAST_MERCHANT_ID: z.string().min(1),
+  PAYFAST_MERCHANT_KEY: z.string().min(1),
+  PAYFAST_PASSPHRASE: z.string().optional(),
+  PAYFAST_SANDBOX: z.string().default('true'),
+  API_URL: z.string().url().default('http://localhost:3001'),
+  WEB_URL: z.string().url().default('http://localhost:3000'),
 });
 
 export type EnvConfig = z.infer<typeof envSchema>;
