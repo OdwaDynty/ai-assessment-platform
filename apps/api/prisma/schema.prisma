@@ -43,6 +43,7 @@ model User {
   documents     Document[]
   assessments Assessment[]
   bankQuestions BankQuestion[]
+  subscription Subscription?
 
   @@map("users")
 }
@@ -356,3 +357,36 @@ model Institution {
   @@map("institutions")
 }
 
+enum SubscriptionPlan {
+  FREE
+  PRO
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELLED
+  PAST_DUE
+}
+
+model Subscription {
+  id                    String             @id @default(uuid())
+  userId                String             @unique @map("user_id")
+  user                  User               @relation(fields: [userId], references: [id])
+
+  plan                  SubscriptionPlan   @default(FREE)
+  status                SubscriptionStatus @default(ACTIVE)
+
+  // PayFast-specific references, used to manage/verify the subscription
+  // via their API and to match incoming ITN webhook notifications back
+  // to the correct user. Nullable since a FREE-plan user has never
+  // actually gone through PayFast at all.
+  payfastToken          String?            @map("payfast_token")
+  payfastSubscriptionId String?            @map("payfast_subscription_id")
+
+  currentPeriodEnd      DateTime?          @map("current_period_end")
+
+  createdAt             DateTime           @default(now()) @map("created_at")
+  updatedAt             DateTime           @updatedAt @map("updated_at")
+
+  @@map("subscriptions")
+}
