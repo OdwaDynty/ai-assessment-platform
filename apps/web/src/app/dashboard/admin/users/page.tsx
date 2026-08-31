@@ -19,7 +19,7 @@ export default function AdminUsersPage() {
     );
   }
 
-  if (currentUser?.role !== 'PLATFORM_ADMIN') {
+  if (currentUser?.role !== 'PLATFORM_ADMIN' && currentUser?.role !== 'INSTITUTION_ADMIN') {
     return (
       <main className="flex min-h-screen items-center justify-center p-8">
         <Card className="w-full max-w-md">
@@ -37,19 +37,16 @@ export default function AdminUsersPage() {
   }
 
   return (
-    <main className="flex min-h-screen flex-col items-center p-8 pt-16">
-      <div className="w-full max-w-3xl">
+    <main className="flex flex-col p-8">
+      <div className="mb-6">
         <h1 className="text-2xl font-semibold text-foreground mb-1">User Management</h1>
-        <p className="text-sm text-muted-foreground mb-6">
-          View and manage every user's role and access on the platform.
+        <p className="text-sm text-muted-foreground">
+          View and manage every user&apos;s role and access on the platform.
         </p>
       </div>
       <Card className="w-full max-w-3xl">
-        <CardHeader className="flex flex-row items-center justify-between">
+        <CardHeader>
           <CardTitle>All users</CardTitle>
-          <Link href="/dashboard">
-            <Button variant="outline">Back</Button>
-          </Link>
         </CardHeader>
         <CardContent>
           {isLoadingUsers && <p className="text-muted-foreground">Loading users...</p>}

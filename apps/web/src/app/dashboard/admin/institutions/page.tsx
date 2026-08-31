@@ -36,23 +36,19 @@ export default function AdminInstitutionsPage() {
   }
 
   return (
-    <main className="flex min-h-screen flex-col items-center p-8 pt-16">
-      <div className="w-full max-w-2xl">
+    <main className="flex flex-col p-8">
+      <div className="mb-6">
         <h1 className="text-2xl font-semibold text-foreground mb-1">Institutions</h1>
-        <p className="text-sm text-muted-foreground mb-6">
+        <p className="text-sm text-muted-foreground">
           Create and manage institutions users can be assigned to.
         </p>
       </div>
       <Card className="w-full max-w-2xl">
-        <CardHeader className="flex flex-row items-center justify-between">
+        <CardHeader>
           <CardTitle>All institutions</CardTitle>
-          <Link href="/dashboard/admin/users">
-            <Button variant="outline">Back to Users</Button>
-          </Link>
         </CardHeader>
         <CardContent className="space-y-6">
           <CreateInstitutionForm />
-
           {isLoading && <p className="text-muted-foreground">Loading institutions...</p>}
           {isError && <p className="text-red-600">Failed to load institutions.</p>}
           {institutions?.length === 0 && (

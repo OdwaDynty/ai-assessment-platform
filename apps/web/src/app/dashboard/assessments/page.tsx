@@ -1,8 +1,8 @@
 // apps/web/src/app/dashboard/assessments/page.tsx
 //
-// "My Assessments" list page. Mirrors dashboard/documents/page.tsx's
-// layout: a Card with a "New Assessment" action and a table of existing
-// assessments, each linking through to its detail/review page.
+// "My Assessments" list page. A Card with a "New Assessment" action and
+// a table of existing assessments, each linking through to its
+// detail/review page.
 
 'use client';
 
@@ -16,24 +16,19 @@ export default function AssessmentsPage() {
   const { data, isLoading, isError } = useAssessmentsList();
 
   return (
-    <main className="flex min-h-screen flex-col items-center gap-6 p-8 pt-16">
-      <div className="w-full max-w-2xl">
+    <main className="flex flex-col gap-6 p-8">
+      <div>
         <h1 className="text-2xl font-semibold text-foreground mb-1">My Assessments</h1>
-        <p className="text-sm text-muted-foreground mb-6">
+        <p className="text-sm text-muted-foreground">
           View and manage your AI-generated assessments.
         </p>
       </div>
       <Card className="w-full max-w-2xl">
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>All assessments</CardTitle>
-          <div className="flex gap-2">
-            <Link href="/dashboard/assessments/new">
-              <Button>New Assessment</Button>
-            </Link>
-            <Link href="/dashboard">
-              <Button variant="outline">Back</Button>
-            </Link>
-          </div>
+          <Link href="/dashboard/assessments/new">
+            <Button>New Assessment</Button>
+          </Link>
         </CardHeader>
         <CardContent>
           {isLoading && <p className="text-muted-foreground">Loading assessments...</p>}

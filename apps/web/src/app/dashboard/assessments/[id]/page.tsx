@@ -21,7 +21,7 @@ export default function AssessmentDetailPage({
   const { id } = use(params);
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center gap-6 p-8">
+    <main className="flex flex-col gap-6 p-8">
       <div className="w-full max-w-2xl flex justify-between items-center">
         <h1 className="text-2xl font-semibold text-foreground">Assessment</h1>
         <Link href="/dashboard/assessments">
