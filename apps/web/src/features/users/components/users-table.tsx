@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
+import { useInstitutionsList } from '@/features/institutions/api/use-institutions-list';
 import {
   Select,
   SelectContent,
@@ -20,10 +21,13 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 
+
+
 const ROLES = ['EDUCATOR', 'INSTITUTION_ADMIN', 'PLATFORM_ADMIN'] as const;
 
 export function UsersTable({ users }: { users: CurrentUser[] }) {
   const { mutate } = useAdminUpdateUser();
+  const { data: institutions } = useInstitutionsList();
 
   return (
     <Table>
@@ -33,6 +37,7 @@ export function UsersTable({ users }: { users: CurrentUser[] }) {
           <TableHead>Full name</TableHead>
           <TableHead>Role</TableHead>
           <TableHead>Active</TableHead>
+            <TableHead>Institution</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -59,18 +64,48 @@ export function UsersTable({ users }: { users: CurrentUser[] }) {
                 </SelectContent>
               </Select>
             </TableCell>
-            <TableCell>
+                        <TableCell>
               <div className="flex items-center gap-2">
                 <Switch
                   checked={user.isActive}
                   onCheckedChange={(isActive) =>
-                    mutate({ userId: user.id, isActive })
+                    mutate({userId: user.id, isActive })
                   }
                 />
-                <Badge variant={user.isActive ? 'default' : 'destructive'}>
+                <Badge variant={user.isActive ? 'default': 'destructive'}>
                   {user.isActive ? 'Active' : 'Inactive'}
                 </Badge>
               </div>
+            </TableCell>
+            <TableCell>
+              <Select
+                value={user.institutionId ?? 'NONE'}
+                onValueChange={(value) => {
+                  if (value) {
+                    mutate({
+                      userId: user.id,
+                      institutionId: value === 'NONE' ? null : value,
+                    });
+                  }
+                }}
+              >
+                <SelectTrigger className="w-40">
+                  <SelectValue placeholder="No institution">
+                    {user.institutionId
+                      ? institutions?.find((i) => i.id === user.institutionId)?.name ??
+                        'Unknown institution'
+                      : 'No institution'}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="NONE">No institution</SelectItem>
+                  {institutions?.map((inst) => (
+                    <SelectItem key={inst.id} value={inst.id}>
+                      {inst.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </TableCell>
           </TableRow>
         ))}
