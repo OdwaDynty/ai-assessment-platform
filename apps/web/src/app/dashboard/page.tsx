@@ -21,7 +21,7 @@ export default function DashboardPage() {
       <Card className="w-full max-w-2xl">
         <CardHeader className="flex flex-row items-center justify-between">
            <CardTitle>Account</CardTitle>
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-wrap">
               {data?.role === 'PLATFORM_ADMIN' && (
                 <Link href="/dashboard/admin/users">
                  <Button variant="outline">Manage Users</Button>
@@ -38,6 +38,9 @@ export default function DashboardPage() {
             </Link>
                         <Link href="/dashboard/question-bank">
               <Button variant="outline">Question Bank</Button>
+            </Link>
+                      <Link href="/dashboard/billing">
+              <Button variant="outline">Billing</Button>
             </Link>
             <SignOutButton />
           </div>
