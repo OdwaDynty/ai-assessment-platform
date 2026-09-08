@@ -59,10 +59,10 @@ export function BankQuestionsList() {
 
         <Select value={bloomsLevel} onValueChange={(v) => v && setBloomsLevel(v)}>
           <SelectTrigger className="w-48">
-            <SelectValue placeholder="Bloom's level" />
+           <SelectValue placeholder="Bloom&apos;s level" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="ALL">All Bloom's levels</SelectItem>
+            <SelectItem value="ALL">All Bloom&apos;s levels</SelectItem>
             {BLOOMS_LEVELS.map((level) => (
               <SelectItem key={level} value={level}>
                 {level}

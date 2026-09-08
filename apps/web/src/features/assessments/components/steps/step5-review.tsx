@@ -190,7 +190,7 @@ export function Step5Review({ assessmentId }: Step5ReviewProps) {
         {assessment.bloomsDistribution && (
           <div>
             <p className="text-xs font-medium text-muted-foreground mb-1">
-              Bloom's Taxonomy
+              Bloom&apos;s Taxonomy
             </p>
             <p className="text-sm">
               {Object.entries(assessment.bloomsDistribution)

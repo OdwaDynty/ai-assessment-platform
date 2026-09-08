@@ -89,14 +89,14 @@ export function Step4Rigor({ assessmentId, onCompleted }: Step4RigorProps) {
       <div>
         <h3 className="text-lg font-medium">Academic rigor</h3>
         <p className="text-sm text-muted-foreground">
-          Set the target percentage distribution across Bloom's Taxonomy
+         Set the target percentage distribution across Bloom&apos;s Taxonomy
           levels and question difficulty. Each must total exactly 100%.
         </p>
       </div>
 
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <FieldLabel>Bloom's Taxonomy distribution</FieldLabel>
+          <FieldLabel>Bloom&apos;s Taxonomy distribution</FieldLabel>
           <span
             className={`text-sm ${
               bloomsTotal === 100 ? 'text-green-600' : 'text-amber-600'
