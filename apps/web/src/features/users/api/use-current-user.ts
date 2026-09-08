@@ -4,12 +4,14 @@ import { useQuery } from '@tanstack/react-query';
 import { createClient } from '@/lib/supabase/client';
 import { env } from '@/lib/env';
 
+export type UserRole = 'PLATFORM_ADMIN' | 'INSTITUTION_ADMIN' | 'EDUCATOR';
+
 export interface CurrentUser {
   id: string;
   supabaseId: string;
   email: string;
   fullName: string | null;
-  role: string;
+  role: UserRole;
   isActive: boolean;
   institutionId: string | null;
   lastLoginAt: string | null;

@@ -10,7 +10,11 @@
 
 import { useState } from 'react';
 import { useUpdateRigor } from '../../api/use-update-rigor';
-import { BLOOMS_LEVELS, DIFFICULTY_LEVELS } from '../../schemas/assessment.schema';
+import {
+  BLOOMS_LEVELS,
+  DIFFICULTY_LEVELS,
+  type UpdateRigorFormValues,
+} from '../../schemas/assessment.schema';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { FieldLabel } from '@/components/ui/field';

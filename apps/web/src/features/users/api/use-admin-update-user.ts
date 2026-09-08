@@ -8,6 +8,7 @@ interface AdminUpdateUserPayload {
   userId: string;
   role?: string;
   isActive?: boolean;
+  institutionId?: string | null;
 }
 
 async function adminUpdateUser({ userId, ...updates }: AdminUpdateUserPayload) {
