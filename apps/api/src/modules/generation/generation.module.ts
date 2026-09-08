@@ -24,6 +24,10 @@ import { BillingModule } from '../billing/billing.module';
     BillingModule,
   ],
   controllers: [GenerationController],
-  providers: [GenerationService, QuestionGenerationService, QuestionGenerationProcessor],
+  providers: [
+    GenerationService,
+    QuestionGenerationService,
+    QuestionGenerationProcessor,
+  ],
 })
 export class GenerationModule {}

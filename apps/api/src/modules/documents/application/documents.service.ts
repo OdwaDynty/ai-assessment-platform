@@ -59,7 +59,9 @@ export class DocumentsService {
     });
 
     if (exists) {
-      await this.processingQueue.add('process-document', { documentId: document.id });
+      await this.processingQueue.add('process-document', {
+        documentId: document.id,
+      });
     }
 
     return updated;

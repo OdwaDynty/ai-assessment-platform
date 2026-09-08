@@ -27,13 +27,17 @@ export class BillingService {
    * yet) -- every user implicitly has FREE access without needing a
    * row created upfront.
    */
-  async getSubscriptionForUser(userId: string): Promise<Pick<Subscription, 'plan' | 'status' | 'currentPeriodEnd'>> {
+  async getSubscriptionForUser(
+    userId: string,
+  ): Promise<Pick<Subscription, 'plan' | 'status' | 'currentPeriodEnd'>> {
     const subscription = await this.prisma.subscription.findUnique({
       where: { userId },
       select: { plan: true, status: true, currentPeriodEnd: true },
     });
 
-    return subscription ?? { plan: 'FREE', status: 'ACTIVE', currentPeriodEnd: null };
+    return (
+      subscription ?? { plan: 'FREE', status: 'ACTIVE', currentPeriodEnd: null }
+    );
   }
 
   /**
@@ -47,7 +51,9 @@ export class BillingService {
    * of the current calendar month, reusing existing data rather than a
    * separate usage-tracking table.
    */
-  async canGenerateAssessment(userId: string): Promise<{ allowed: boolean; reason?: string }> {
+  async canGenerateAssessment(
+    userId: string,
+  ): Promise<{ allowed: boolean; reason?: string }> {
     const subscription = await this.getSubscriptionForUser(userId);
 
     if (subscription.plan === 'PRO' && subscription.status === 'ACTIVE') {
@@ -85,9 +91,12 @@ export class BillingService {
     const merchantId = this.configService.get<string>('PAYFAST_MERCHANT_ID');
     const merchantKey = this.configService.get<string>('PAYFAST_MERCHANT_KEY');
     const passphrase = this.configService.get<string>('PAYFAST_PASSPHRASE');
-    const isSandbox = this.configService.get<string>('PAYFAST_SANDBOX') === 'true';  
-    const apiUrl = this.configService.get<string>('API_URL') ?? 'http://localhost:3001';
-    const webUrl = this.configService.get<string>('WEB_URL') ?? 'http://localhost:3000';
+    const isSandbox =
+      this.configService.get<string>('PAYFAST_SANDBOX') === 'true';
+    const apiUrl =
+      this.configService.get<string>('API_URL') ?? 'http://localhost:3001';
+    const webUrl =
+      this.configService.get<string>('WEB_URL') ?? 'http://localhost:3000';
 
     const data: Record<string, string> = {
       merchant_id: merchantId!,
@@ -162,7 +171,9 @@ export class BillingService {
       });
       this.logger.log(`Subscription cancelled for user ${userId}`);
     } else {
-      this.logger.warn(`Unhandled ITN payment_status: ${paymentStatus} for user ${userId}`);
+      this.logger.warn(
+        `Unhandled ITN payment_status: ${paymentStatus} for user ${userId}`,
+      );
     }
   }
 }

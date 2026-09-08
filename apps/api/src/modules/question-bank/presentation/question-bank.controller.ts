@@ -44,7 +44,8 @@ export class QuestionBankController {
   @Get()
   findAll(
     @CurrentUser() user: User,
-    @Query(new ZodValidationPipe(listBankQuestionsSchema)) filters: ListBankQuestionsDto,
+    @Query(new ZodValidationPipe(listBankQuestionsSchema))
+    filters: ListBankQuestionsDto,
   ) {
     return this.questionBankService.findAllForUser(user.id, filters);
   }

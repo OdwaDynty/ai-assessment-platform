@@ -29,14 +29,20 @@ function buildSignatureString(
     if (key === 'signature') continue;
     if (value === undefined || value === null || value === '') continue;
 
-    const encoded = encodeURIComponent(String(value).trim()).replace(/%20/g, '+');
+    const encoded = encodeURIComponent(String(value).trim()).replace(
+      /%20/g,
+      '+',
+    );
     pairs.push(`${key}=${encoded}`);
   }
 
   let queryString = pairs.join('&');
 
   if (passphrase) {
-    const encodedPassphrase = encodeURIComponent(passphrase.trim()).replace(/%20/g, '+');
+    const encodedPassphrase = encodeURIComponent(passphrase.trim()).replace(
+      /%20/g,
+      '+',
+    );
     queryString += `&passphrase=${encodedPassphrase}`;
   }
 

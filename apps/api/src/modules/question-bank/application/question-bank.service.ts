@@ -24,7 +24,7 @@ export class QuestionBankService {
    * throughout AssessmentsService -- a user can only save questions
    * from assessments they own.
    */
-   async saveFromAssessmentQuestion(
+  async saveFromAssessmentQuestion(
     userId: string,
     dto: SaveToBankDto,
   ): Promise<BankQuestion> {
@@ -83,7 +83,10 @@ export class QuestionBankService {
    * BankQuestion stores ownerId itself (unlike Question, which only
    * has ownership via its parent assessment).
    */
-  async deleteBankQuestion(bankQuestionId: string, userId: string): Promise<void> {
+  async deleteBankQuestion(
+    bankQuestionId: string,
+    userId: string,
+  ): Promise<void> {
     const bankQuestion = await this.prisma.bankQuestion.findUnique({
       where: { id: bankQuestionId },
     });

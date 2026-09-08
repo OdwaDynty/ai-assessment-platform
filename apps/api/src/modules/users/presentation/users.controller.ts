@@ -41,7 +41,7 @@ export class UsersController {
     return this.usersService.updateOwnProfile(user.id, dto);
   }
 
-    @Get()
+  @Get()
   @UseGuards(RolesGuard)
   @Roles('PLATFORM_ADMIN', 'INSTITUTION_ADMIN')
   findAll(

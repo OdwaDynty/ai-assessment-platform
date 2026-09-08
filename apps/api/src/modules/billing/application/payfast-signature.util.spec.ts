@@ -7,10 +7,13 @@
 // (spaces as %20 vs +) that had to be manually debugged during
 // Phase 14's development.
 
-import { generatePayfastSignature, verifyPayfastSignature } from './payfast-signature.util';
+import {
+  generatePayfastSignature,
+  verifyPayfastSignature,
+} from './payfast-signature.util';
 
 describe('generatePayfastSignature', () => {
-  it('encodes spaces as + rather than %20, matching PayFast\'s expected format', () => {
+  it("encodes spaces as + rather than %20, matching PayFast's expected format", () => {
     // This is a regression test for a real encoding bug: standard
     // encodeURIComponent produces %20 for spaces, but PayFast expects
     // application/x-www-form-urlencoded style (+) instead. Getting
@@ -61,14 +64,25 @@ describe('generatePayfastSignature', () => {
   });
 
   it('appends the passphrase to the hash when one is provided', () => {
-    const withPassphrase = generatePayfastSignature({ merchant_id: '12345' }, 'my-secret');
-    const withoutPassphrase = generatePayfastSignature({ merchant_id: '12345' });
+    const withPassphrase = generatePayfastSignature(
+      { merchant_id: '12345' },
+      'my-secret',
+    );
+    const withoutPassphrase = generatePayfastSignature({
+      merchant_id: '12345',
+    });
     expect(withPassphrase).not.toBe(withoutPassphrase);
   });
 
   it('produces the same signature with no passphrase and an empty-string passphrase', () => {
-    const withUndefined = generatePayfastSignature({ merchant_id: '12345' }, undefined);
-    const withEmptyString = generatePayfastSignature({ merchant_id: '12345' }, '');
+    const withUndefined = generatePayfastSignature(
+      { merchant_id: '12345' },
+      undefined,
+    );
+    const withEmptyString = generatePayfastSignature(
+      { merchant_id: '12345' },
+      '',
+    );
     expect(withUndefined).toBe(withEmptyString);
   });
 
@@ -103,8 +117,12 @@ describe('verifyPayfastSignature', () => {
   it('requires the same passphrase used at signing time to verify successfully', () => {
     const data = { merchant_id: '12345' };
     const signature = generatePayfastSignature(data, 'correct-passphrase');
-    expect(verifyPayfastSignature(data, signature, 'correct-passphrase')).toBe(true);
-    expect(verifyPayfastSignature(data, signature, 'wrong-passphrase')).toBe(false);
+    expect(verifyPayfastSignature(data, signature, 'correct-passphrase')).toBe(
+      true,
+    );
+    expect(verifyPayfastSignature(data, signature, 'wrong-passphrase')).toBe(
+      false,
+    );
     expect(verifyPayfastSignature(data, signature)).toBe(false);
   });
 });

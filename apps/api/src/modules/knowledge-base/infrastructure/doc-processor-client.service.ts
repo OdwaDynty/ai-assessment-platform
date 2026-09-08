@@ -12,11 +12,16 @@ export interface ExtractionResult {
 export class DocProcessorClientService {
   constructor(private readonly configService: ConfigService) {}
 
-  async extractText(fileBuffer: Buffer, fileName: string): Promise<ExtractionResult> {
+  async extractText(
+    fileBuffer: Buffer,
+    fileName: string,
+  ): Promise<ExtractionResult> {
     const baseUrl = this.configService.get<string>('DOC_PROCESSOR_URL');
 
     const formData = new FormData();
-    const blob = new Blob([new Uint8Array(fileBuffer)], { type: 'application/pdf' });
+    const blob = new Blob([new Uint8Array(fileBuffer)], {
+      type: 'application/pdf',
+    });
     formData.append('file', blob, fileName);
 
     const response = await fetch(`${baseUrl}/extract`, {
@@ -31,6 +36,6 @@ export class DocProcessorClientService {
       );
     }
 
-    return response.json();
+    return (await response.json()) as ExtractionResult;
   }
 }

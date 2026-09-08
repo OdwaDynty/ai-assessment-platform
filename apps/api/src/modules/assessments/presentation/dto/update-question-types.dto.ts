@@ -19,10 +19,7 @@ const questionTypeEnum = z.enum([
 
 const questionTypeConfigInputSchema = z.object({
   questionType: questionTypeEnum,
-  questionCount: z
-    .number()
-    .int()
-    .min(1, 'Question count must be at least 1'),
+  questionCount: z.number().int().min(1, 'Question count must be at least 1'),
   marksPerQuestion: z
     .number()
     .int()

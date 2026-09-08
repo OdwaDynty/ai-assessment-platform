@@ -29,10 +29,7 @@ describe('allocateByDistribution', () => {
   });
 
   it('excludes levels with 0%, even if flooring would otherwise round them up', () => {
-    const result = allocateByDistribution(
-      { REMEMBER: 0, UNDERSTAND: 100 },
-      5,
-    );
+    const result = allocateByDistribution({ REMEMBER: 0, UNDERSTAND: 100 }, 5);
     expect(result.every((x) => x === 'UNDERSTAND')).toBe(true);
     expect(result).not.toContain('REMEMBER');
   });
@@ -55,7 +52,14 @@ describe('allocateByDistribution', () => {
   it('always returns exactly `count` items regardless of rounding', () => {
     // A stress case with several levels and a count that doesn't divide
     // evenly across any of them -- the real risk case for rounding bugs.
-    const distribution = { REMEMBER: 17, UNDERSTAND: 23, APPLY: 15, ANALYZE: 20, EVALUATE: 12, CREATE: 13 };
+    const distribution = {
+      REMEMBER: 17,
+      UNDERSTAND: 23,
+      APPLY: 15,
+      ANALYZE: 20,
+      EVALUATE: 12,
+      CREATE: 13,
+    };
     for (const count of [1, 2, 3, 5, 7, 11, 13, 20]) {
       const result = allocateByDistribution(distribution, count);
       expect(result).toHaveLength(count);

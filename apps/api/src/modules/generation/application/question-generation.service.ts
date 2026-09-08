@@ -17,7 +17,10 @@ import {
   type RetrievedContextChunk,
 } from './prompt-builder.util';
 import type { GenerateQuestionsJobData } from './generation.service';
-import type { BloomsLevel, DifficultyLevel } from '../../../../generated/prisma/client';
+import type {
+  BloomsLevel,
+  DifficultyLevel,
+} from '../../../../generated/prisma/client';
 
 const GENERATION_MODEL = 'gpt-4o';
 
@@ -58,17 +61,18 @@ export class QuestionGenerationService {
     // Fetch everything this batch needs: the config itself, the parent
     // assessment (for basics + rigor distributions + owner), its source
     // documents, and its learning outcomes.
-    const config = await this.prisma.assessmentQuestionTypeConfig.findUniqueOrThrow({
-      where: { id: questionTypeConfigId },
-      include: {
-        assessment: {
-          include: {
-            sourceDocuments: { include: { document: true } },
-            learningOutcomes: true,
+    const config =
+      await this.prisma.assessmentQuestionTypeConfig.findUniqueOrThrow({
+        where: { id: questionTypeConfigId },
+        include: {
+          assessment: {
+            include: {
+              sourceDocuments: { include: { document: true } },
+              learningOutcomes: true,
+            },
           },
         },
-      },
-    });
+      });
 
     const assessment = config.assessment;
 
@@ -170,32 +174,46 @@ export class QuestionGenerationService {
     // rather than partially writing garbage to the database.
     let parsed: { questions: RawGeneratedQuestion[] };
     try {
-      parsed = JSON.parse(rawContent);
+      parsed = JSON.parse(rawContent) as { questions: RawGeneratedQuestion[] };
     } catch {
       throw new Error('OpenAI response was not valid JSON');
     }
 
-    if (!Array.isArray(parsed.questions) || parsed.questions.length !== config.questionCount) {
+    if (
+      !Array.isArray(parsed.questions) ||
+      parsed.questions.length !== config.questionCount
+    ) {
       throw new Error(
         `Expected ${config.questionCount} questions, got ${parsed.questions?.length ?? 0}`,
       );
     }
 
     const validBloomsLevels = new Set([
-      'REMEMBER', 'UNDERSTAND', 'APPLY', 'ANALYZE', 'EVALUATE', 'CREATE',
+      'REMEMBER',
+      'UNDERSTAND',
+      'APPLY',
+      'ANALYZE',
+      'EVALUATE',
+      'CREATE',
     ]);
     const validDifficultyLevels = new Set(['EASY', 'MEDIUM', 'HARD']);
-    const validOutcomeCodes = new Set(assessment.learningOutcomes.map((lo) => lo.code));
+    const validOutcomeCodes = new Set(
+      assessment.learningOutcomes.map((lo) => lo.code),
+    );
 
     for (const q of parsed.questions) {
       if (!q.questionText || typeof q.questionText !== 'string') {
         throw new Error('A generated question is missing questionText');
       }
       if (!validBloomsLevels.has(q.bloomsLevel)) {
-        throw new Error(`Invalid bloomsLevel in generated question: ${q.bloomsLevel}`);
+        throw new Error(
+          `Invalid bloomsLevel in generated question: ${q.bloomsLevel}`,
+        );
       }
       if (!validDifficultyLevels.has(q.difficulty)) {
-        throw new Error(`Invalid difficulty in generated question: ${q.difficulty}`);
+        throw new Error(
+          `Invalid difficulty in generated question: ${q.difficulty}`,
+        );
       }
       if (
         !Array.isArray(q.learningOutcomeCodes) ||
@@ -262,14 +280,17 @@ export class QuestionGenerationService {
    * rolls that up into the assessment's overall status: GENERATED if
    * every batch succeeded, FAILED if any batch ultimately failed.
    */
-  private async checkAndFinalizeAssessmentStatus(assessmentId: string): Promise<void> {
+  private async checkAndFinalizeAssessmentStatus(
+    assessmentId: string,
+  ): Promise<void> {
     const configs = await this.prisma.assessmentQuestionTypeConfig.findMany({
       where: { assessmentId },
       select: { generationStatus: true },
     });
 
     const stillRunning = configs.some(
-      (c) => c.generationStatus === 'PENDING' || c.generationStatus === 'GENERATING',
+      (c) =>
+        c.generationStatus === 'PENDING' || c.generationStatus === 'GENERATING',
     );
     if (stillRunning) return;
 

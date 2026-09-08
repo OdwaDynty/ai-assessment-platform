@@ -55,7 +55,8 @@ export class DocumentProcessingService {
 
       const embeddings = await this.embedding.embedBatch(chunks);
 
-      await this.prisma.$executeRaw`DELETE FROM document_chunks WHERE document_id = ${documentId}`;
+      await this.prisma
+        .$executeRaw`DELETE FROM document_chunks WHERE document_id = ${documentId}`;
 
       for (let i = 0; i < chunks.length; i++) {
         const vectorLiteral = `[${embeddings[i].join(',')}]`;
@@ -76,7 +77,9 @@ export class DocumentProcessingService {
       );
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown error';
-      this.logger.error(`Processing failed for document ${documentId}: ${message}`);
+      this.logger.error(
+        `Processing failed for document ${documentId}: ${message}`,
+      );
 
       await this.prisma.document.update({
         where: { id: documentId },

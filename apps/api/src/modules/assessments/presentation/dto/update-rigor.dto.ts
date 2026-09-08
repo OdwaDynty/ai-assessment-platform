@@ -37,7 +37,7 @@ const bloomsDistributionSchema = z
   })
   .refine(
     (dist) => bloomsLevels.reduce((sum, level) => sum + dist[level], 0) === 100,
-    { message: 'Bloom\'s Taxonomy distribution must sum to exactly 100' },
+    { message: "Bloom's Taxonomy distribution must sum to exactly 100" },
   );
 
 const difficultyDistributionSchema = z

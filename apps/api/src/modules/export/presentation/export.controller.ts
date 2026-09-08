@@ -31,7 +31,10 @@ export class ExportController {
     @CurrentUser() user: User,
     @Res() res: Response,
   ) {
-    const assessment = await this.assessmentsService.findOneForUser(id, user.id);
+    const assessment = await this.assessmentsService.findOneForUser(
+      id,
+      user.id,
+    );
     const document = this.questionPaperBuilder.build(assessment);
     const buffer = await Packer.toBuffer(document);
 
@@ -53,7 +56,10 @@ export class ExportController {
     @CurrentUser() user: User,
     @Res() res: Response,
   ) {
-    const assessment = await this.assessmentsService.findOneForUser(id, user.id);
+    const assessment = await this.assessmentsService.findOneForUser(
+      id,
+      user.id,
+    );
     const document = this.memorandumBuilder.build(assessment);
     const buffer = await Packer.toBuffer(document);
 

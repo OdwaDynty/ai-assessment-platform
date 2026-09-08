@@ -30,12 +30,14 @@ export function allocateByDistribution<T extends string>(
 
   // Step 1: compute the raw (fractional) share of `count` each level
   // should get, then take the floor as a starting allocation.
-  const rawShares = activeLevels.map((level) => (distribution[level] / 100) * count);
+  const rawShares = activeLevels.map(
+    (level) => (distribution[level] / 100) * count,
+  );
   const flooredShares = rawShares.map(Math.floor);
   const remainders = rawShares.map((raw, i) => raw - flooredShares[i]);
 
-  let allocated = flooredShares.reduce((sum, n) => sum + n, 0);
-  let remaining = count - allocated;
+  const allocated = flooredShares.reduce((sum, n) => sum + n, 0);
+  const remaining = count - allocated;
 
   // Step 2: distribute the leftover items (due to flooring) to the
   // levels with the largest fractional remainders first -- this is the

@@ -51,7 +51,9 @@ export class QuestionGenerationProcessor extends WorkerHost {
         select: { generationStatus: true },
       });
       const stillRunning = configs.some(
-        (c) => c.generationStatus === 'PENDING' || c.generationStatus === 'GENERATING',
+        (c) =>
+          c.generationStatus === 'PENDING' ||
+          c.generationStatus === 'GENERATING',
       );
       if (!stillRunning) {
         await this.prisma.assessment.update({

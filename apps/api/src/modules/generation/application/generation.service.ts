@@ -27,7 +27,7 @@ export interface GenerateQuestionsJobData {
 
 @Injectable()
 export class GenerationService {
-    constructor(
+  constructor(
     private readonly prisma: PrismaService,
     private readonly billingService: BillingService,
     @InjectQueue('question-generation')
@@ -53,7 +53,7 @@ export class GenerationService {
     if (!assessment) {
       throw new NotFoundException('Assessment not found');
     }
-   if (assessment.ownerId !== userId) {
+    if (assessment.ownerId !== userId) {
       throw new ForbiddenException('You do not own this assessment');
     }
 
@@ -61,7 +61,8 @@ export class GenerationService {
     // any other work -- a user who's hit their limit shouldn't be told
     // about missing wizard steps first, only to then hit a billing
     // wall; the billing check is the more fundamental gate.
-    const { allowed, reason } = await this.billingService.canGenerateAssessment(userId);
+    const { allowed, reason } =
+      await this.billingService.canGenerateAssessment(userId);
     if (!allowed) {
       throw new BadRequestException(reason);
     }
@@ -72,10 +73,14 @@ export class GenerationService {
     // distributions set. Any gap here would mean the AI has nothing
     // meaningful to work with for that piece.
     const missing: string[] = [];
-    if (!assessment.title || !assessment.totalMarks) missing.push('basics (Step 2)');
-    if (assessment.sourceDocuments.length === 0) missing.push('source documents (Step 1)');
-    if (assessment.learningOutcomes.length === 0) missing.push('learning outcomes (Step 2)');
-    if (assessment.questionTypeConfigs.length === 0) missing.push('question types (Step 3)');
+    if (!assessment.title || !assessment.totalMarks)
+      missing.push('basics (Step 2)');
+    if (assessment.sourceDocuments.length === 0)
+      missing.push('source documents (Step 1)');
+    if (assessment.learningOutcomes.length === 0)
+      missing.push('learning outcomes (Step 2)');
+    if (assessment.questionTypeConfigs.length === 0)
+      missing.push('question types (Step 3)');
     if (!assessment.bloomsDistribution || !assessment.difficultyDistribution) {
       missing.push('rigor distribution (Step 4)');
     }

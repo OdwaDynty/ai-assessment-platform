@@ -1,4 +1,7 @@
-export function parseRedisUrl(redisUrl: string): { host: string; port: number } {
+export function parseRedisUrl(redisUrl: string): {
+  host: string;
+  port: number;
+} {
   const url = new URL(redisUrl);
   return {
     host: url.hostname,

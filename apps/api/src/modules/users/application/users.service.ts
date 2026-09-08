@@ -110,7 +110,7 @@ export class UsersService {
       }
       if (dto.institutionId !== undefined) {
         throw new ForbiddenException(
-          'Only platform admins can change a user\'s institution assignment',
+          "Only platform admins can change a user's institution assignment",
         );
       }
 

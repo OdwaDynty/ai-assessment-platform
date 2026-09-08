@@ -57,7 +57,11 @@ export class BillingController {
       throw new UnauthorizedException('Missing signature');
     }
 
-    const isValid = verifyPayfastSignature(payload, receivedSignature, passphrase);
+    const isValid = verifyPayfastSignature(
+      payload,
+      receivedSignature,
+      passphrase,
+    );
     if (!isValid) {
       throw new UnauthorizedException('Invalid signature');
     }

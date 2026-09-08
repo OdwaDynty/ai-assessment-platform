@@ -11,12 +11,16 @@ export interface ProcessDocumentJobData {
 export class DocumentProcessingProcessor extends WorkerHost {
   private readonly logger = new Logger(DocumentProcessingProcessor.name);
 
-  constructor(private readonly documentProcessingService: DocumentProcessingService) {
+  constructor(
+    private readonly documentProcessingService: DocumentProcessingService,
+  ) {
     super();
   }
 
   async process(job: Job<ProcessDocumentJobData>): Promise<void> {
-    this.logger.log(`Processing job ${job.id} for document ${job.data.documentId}`);
+    this.logger.log(
+      `Processing job ${job.id} for document ${job.data.documentId}`,
+    );
     await this.documentProcessingService.processDocument(job.data.documentId);
   }
 }

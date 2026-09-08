@@ -10,7 +10,10 @@ import { z } from 'zod';
 export const searchQuerySchema = z.object({
   // The natural-language question/topic to search for. Required, non-empty,
   // capped at a reasonable length to avoid abuse (huge strings = huge OpenAI embedding cost).
-  query: z.string().min(1, 'Query cannot be empty').max(2000, 'Query is too long'),
+  query: z
+    .string()
+    .min(1, 'Query cannot be empty')
+    .max(2000, 'Query is too long'),
 
   // Optional: restrict the search to a single document (e.g. "search only within this study guide").
   // If omitted, search runs across ALL documents owned by the requesting user.

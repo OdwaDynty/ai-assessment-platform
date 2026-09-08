@@ -145,7 +145,7 @@ export class AssessmentsService {
     return updated;
   }
 
-/**
+  /**
    * Step 3: Replaces the assessment's full set of question type
    * configurations (which types, how many of each, marks per question).
    *
@@ -266,10 +266,12 @@ export class AssessmentsService {
       throw new ForbiddenException('You do not own this question');
     }
 
-   return this.prisma.question.update({
+    return this.prisma.question.update({
       where: { id: questionId },
       data: {
-        ...(dto.questionText !== undefined && { questionText: dto.questionText }),
+        ...(dto.questionText !== undefined && {
+          questionText: dto.questionText,
+        }),
         ...(dto.memorandum !== undefined && { memorandum: dto.memorandum }),
         ...(dto.marks !== undefined && { marks: dto.marks }),
         ...(dto.optionsData !== undefined && { optionsData: dto.optionsData }),

@@ -8,10 +8,7 @@ import { SupabaseAuthGuard } from '../../../common/guards/supabase-auth.guard';
 import { CurrentUser } from '../../../common/decorators/current-user.decorator';
 import { ZodValidationPipe } from '../../../common/pipes/zod-validation.pipe';
 import { RetrievalService } from '../application/retrieval.service';
-import {
-  searchQuerySchema,
-  type SearchQueryDto,
-} from './dto/search-query.dto';
+import { searchQuerySchema, type SearchQueryDto } from './dto/search-query.dto';
 import type { User } from '../../../../generated/prisma/client';
 
 @Controller('knowledge-base')

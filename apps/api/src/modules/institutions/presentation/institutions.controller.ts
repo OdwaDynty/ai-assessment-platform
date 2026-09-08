@@ -21,7 +21,8 @@ export class InstitutionsController {
 
   @Post()
   create(
-    @Body(new ZodValidationPipe(createInstitutionSchema)) dto: CreateInstitutionDto,
+    @Body(new ZodValidationPipe(createInstitutionSchema))
+    dto: CreateInstitutionDto,
   ) {
     return this.institutionsService.create(dto);
   }

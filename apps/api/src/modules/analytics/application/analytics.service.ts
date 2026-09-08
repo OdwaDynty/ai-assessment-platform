@@ -8,7 +8,10 @@
 
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../../prisma/prisma.service';
-import { BillingService, FREE_TIER_MONTHLY_LIMIT } from '../../billing/application/billing.service';
+import {
+  BillingService,
+  FREE_TIER_MONTHLY_LIMIT,
+} from '../../billing/application/billing.service';
 
 export interface AnalyticsSummary {
   totalAssessments: number;
@@ -95,12 +98,15 @@ export class AnalyticsService {
       totalAssessments,
       generatedAssessments,
       currentMonthGenerations,
-      monthlyLimit: subscription.plan === 'PRO' ? null : FREE_TIER_MONTHLY_LIMIT,
+      monthlyLimit:
+        subscription.plan === 'PRO' ? null : FREE_TIER_MONTHLY_LIMIT,
       plan: subscription.plan,
-      questionTypeBreakdown: Array.from(typeCountMap.entries()).map(([type, count]) => ({
-        type,
-        count,
-      })),
+      questionTypeBreakdown: Array.from(typeCountMap.entries()).map(
+        ([type, count]) => ({
+          type,
+          count,
+        }),
+      ),
       bloomsLevelBreakdown: bloomsLevelCounts.map((row) => ({
         level: row.bloomsLevel,
         count: row._count,

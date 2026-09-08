@@ -19,10 +19,9 @@ const mcqOptionSchema = z.object({
 const mcqOptionsSchema = z
   .array(mcqOptionSchema)
   .length(4, 'MCQ questions must have exactly 4 options')
-  .refine(
-    (options) => options.filter((o) => o.isCorrect).length === 1,
-    { message: 'Exactly one option must be marked as correct' },
-  );
+  .refine((options) => options.filter((o) => o.isCorrect).length === 1, {
+    message: 'Exactly one option must be marked as correct',
+  });
 
 export const updateQuestionSchema = z.object({
   questionText: z.string().min(1, 'Question text cannot be empty').optional(),

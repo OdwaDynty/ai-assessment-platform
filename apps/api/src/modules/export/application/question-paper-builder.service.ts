@@ -14,10 +14,7 @@ import {
   AlignmentType,
   PageBreak,
 } from 'docx';
-import type {
-  Assessment,
-  Question,
-} from '../../../../generated/prisma/client';
+import type { Assessment, Question } from '../../../../generated/prisma/client';
 
 // The full assessment shape this builder needs, matching what
 // AssessmentsService.findOneForUser already returns.
@@ -147,7 +144,10 @@ export class QuestionPaperBuilderService {
         'correctAnswer' in question.optionsData
       ) {
         paragraphs.push(
-          new Paragraph({ text: 'Answer: _________________', spacing: { after: 100 } }),
+          new Paragraph({
+            text: 'Answer: _________________',
+            spacing: { after: 100 },
+          }),
         );
       }
     });

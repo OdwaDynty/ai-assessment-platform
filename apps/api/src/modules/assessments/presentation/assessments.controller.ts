@@ -4,7 +4,16 @@
 // DocumentsController and KnowledgeBaseController: SupabaseAuthGuard +
 // @CurrentUser() decorator + ZodValidationPipe for request validation.
 
-import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import { SupabaseAuthGuard } from '../../../common/guards/supabase-auth.guard';
 import { CurrentUser } from '../../../common/decorators/current-user.decorator';
 import { ZodValidationPipe } from '../../../common/pipes/zod-validation.pipe';
@@ -24,10 +33,7 @@ import {
   type UpdateQuestionTypesDto,
 } from './dto/update-question-types.dto';
 
-import {
-  updateRigorSchema,
-  type UpdateRigorDto,
-} from './dto/update-rigor.dto';
+import { updateRigorSchema, type UpdateRigorDto } from './dto/update-rigor.dto';
 
 import {
   updateQuestionSchema,
@@ -49,7 +55,8 @@ export class AssessmentsController {
   @Post()
   create(
     @CurrentUser() user: User,
-    @Body(new ZodValidationPipe(createAssessmentSchema)) dto: CreateAssessmentDto,
+    @Body(new ZodValidationPipe(createAssessmentSchema))
+    dto: CreateAssessmentDto,
   ) {
     return this.assessmentsService.createDraft(user.id, dto);
   }
@@ -65,7 +72,7 @@ export class AssessmentsController {
     return this.assessmentsService.updateBasics(id, user.id, dto);
   }
 
-// PATCH /assessments/:id/question-types — Step 3: configure question
+  // PATCH /assessments/:id/question-types — Step 3: configure question
   // types, counts, and marks per question.
   @Patch(':id/question-types')
   updateQuestionTypes(

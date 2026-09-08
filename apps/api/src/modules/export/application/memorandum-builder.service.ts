@@ -15,10 +15,7 @@ import {
   AlignmentType,
   PageBreak,
 } from 'docx';
-import type {
-  Assessment,
-  Question,
-} from '../../../../generated/prisma/client';
+import type { Assessment, Question } from '../../../../generated/prisma/client';
 
 type AssessmentWithQuestions = Assessment & {
   questions: Question[];
@@ -135,8 +132,9 @@ export class MemorandumBuilderService {
         typeof question.optionsData === 'object' &&
         'correctAnswer' in question.optionsData
       ) {
-        const correctAnswer = (question.optionsData as { correctAnswer: boolean })
-          .correctAnswer;
+        const correctAnswer = (
+          question.optionsData as { correctAnswer: boolean }
+        ).correctAnswer;
         paragraphs.push(
           new Paragraph({
             children: [
@@ -152,7 +150,9 @@ export class MemorandumBuilderService {
       // of type -- this is the whole point of this document.
       paragraphs.push(
         new Paragraph({
-          children: [new TextRun({ text: 'Marking Guide:', bold: true, italics: true })],
+          children: [
+            new TextRun({ text: 'Marking Guide:', bold: true, italics: true }),
+          ],
           spacing: { before: 100 },
         }),
         new Paragraph({
